@@ -1,0 +1,190 @@
+/***********************************************
+GuiGantryRobot - Sumukh Anand
+***********************************************/
+
+*****
+V0
+*****
+
+//VARIABLES
+	public enum State {
+	    FREE,
+	    TO_IDLE,
+	    AT_IDLE,
+	    TO_GANTRY_BOAT,
+	    AT_GANTRY_BOAT,
+	    TO_FEEDER, 
+	    AT_FEEDER
+	}
+
+	const int idleX;
+	const int idleY;
+	const int boatX;
+	const int boatY;
+		
+	State currState;
+	GuiBin binToLoad
+	Agent gantryRobot
+-------------------------------------------------
+
+//CONSTRUCTORS
+	GuiKitRobot(int x, int y){
+		//Create robot
+		currX = x;
+		currY = y;
+	}
+		
+	GuiKitRobot(){
+		//Create robot
+		currX = 0;
+		currY = 0;
+	}
+-------------------------------------------------
+
+//METHODS
+	public void draw(Graphics g){
+		//Draw parts that robot is holding
+		for (loop through armContents){
+			armContents[i].draw();
+		}
+			
+		super.draw(g);
+	}
+		
+	public void updateLocation(){
+		//Send messages according to State
+			
+		switch(currState){
+			case(TO_IDLE):
+			break;
+				
+			case(AT_IDLE):
+				currState = FREE;
+			break;
+				
+			case(TO_GANTRY_BOAT):
+				//if (at gantry boat)
+					//grab bin
+			break;
+				
+			case(AT_GANTRY_BOAT):
+				gantryRobot.animationDone();
+			break;
+				
+			case(TO_FEEDER):
+				//if (at feeder)
+					//drop bin
+			break;
+				
+			case(AT_FEEDER):
+				gantryRobot.animationDone();
+			break;
+			}	
+		super.updateLocation()
+	}
+		
+	public void setAgent(Agent agent){
+		//Set the agent
+		gantrytRobot = agent;
+	}
+		
+	public void DoGoToIdle(){
+		//Set destination X and Y to idle X and Y
+		destX = idleX;
+		destY = idleY;
+			
+		currState = TO_IDLE;
+	}
+		
+	public void DoRetrieveBin(GuiBin bin){
+		//Set destination X and Y to belt X and Y
+		binToLoad = bin;
+		destX = boatX;
+		destY = boatY;
+			
+		currState = TO_GANTRY_BOAT;
+	}
+		
+	public void DoLoadBin(GuiFeeder feeder){
+		//Pick up empty kit and set destination X and Y to kit X and Y
+		destX = feeder.getX();
+		destY = feeder.getY();
+			
+		currState = TO_FEEDER
+	}
+}
+//==========================================================
+
+*****
+V1/V2
+*****
+
+//VARIABLES
+	private enum State {
+		FREE,
+		TO_IDLE,
+		AT_IDLE,
+		TO_BOAT_PICKUP,
+		TO_BOAT_DROPOFF,
+		AT_GANTRY_BOAT,
+		TO_FEEDER_DROPOFF,
+		TO_FEEDER_PICKUP,
+		AT_FEEDER
+	}
+
+	private State currState;
+	private GuiBin binToLoad;
+	private GantryAgent gantryRobot;
+	private GuiFeeder feederReference;
+	private GuiBoat boatReference;
+-------------------------------------------------
+
+//CONSTRUCTORS
+	public GuiGantryRobot() {
+	}
+
+	public GuiGantryRobot(int x, int y){
+	}
+-------------------------------------------------
+
+//METHODS
+	@Override
+	public void updateLocation(){
+		//Update location according to state
+		//Unload and load objects to armContents when required
+		//Return messages to agent
+	}
+
+	@Override
+	public void setAgent(GantryAgent agent) {
+		//Set the agent
+	}
+
+	@Override
+	public void DoGoToIdle() {
+		//Set destination X and Y to idle X and Y
+		//Set state
+	}
+
+	@Override
+	public void DoRetrieveBin(GuiBin bin, GuiBoat boat) {
+		//Set destination X and Y to belt X and Y
+		//Save binToLoad
+		//Set state
+	}
+
+	@Override
+	public void DoLoadBin(GuiFeeder feeder) {
+		//Pick up empty kit and set destination X and Y to kit X and Y
+		//Set state
+	}
+	
+	@Override
+	public void DoReturnEmptyBin(GuiBin bin, GuiFeeder feeder){
+		//Set destantion X and Y
+		//Save binToLoad and feederReference
+		//Set state
+	}
+//==========================================================
+
+	

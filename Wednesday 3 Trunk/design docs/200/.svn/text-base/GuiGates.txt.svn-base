@@ -1,0 +1,51 @@
+@author Jonathan Chu
+
+==================================================
+public class GuiGates implements Gui, MouseListener
+================================================== 
+private static int WIDTH = 1000;
+private int displacement;
+enum gateState {CLOSED, OPENING, OPEN, CLOSING};
+gateState myState;
+==================================================
+//constructor that makes sure that displacement is 0 and the state is 0
+public GuiGates()
+
+//the draw method has state change cases that allows for the gates to open... these are
+//closed, opening, open and closing
+public void draw(Graphics g) 
+
+//update location method which allows to see the cases coming together step by step, closed
+//opening, open and closing
+public void updateLocation() 
+
+//boolen that allows to see if gate has opened
+public boolean isOpen()
+
+//boolean that checks if gate is closed
+public boolean isClosed()
+
+//open gates changes the state to open the gates 
+public void openGates()
+
+//close the gates changes the state so the gates close
+public void closeGates()
+
+//these are the unimplemented methods we don't need but must have in here
+public void partCallback(Gui part)
+public void enable() 
+public void disable() 
+public Power checkPower() 
+public void destroy()
+public void repair() 
+public boolean checkRepair() 
+public int getCurrentX() 
+public int getCurrentY() 
+public int getDestinationX() 
+public int getDestinationY() 
+public void setDestination(int x, int y) 
+public void mouseClicked(MouseEvent e) {
+public void mouseEntered(MouseEvent e) {
+public void mouseExited(MouseEvent e) {
+public void mousePressed(MouseEvent e) {
+public void mouseReleased(MouseEvent e) {

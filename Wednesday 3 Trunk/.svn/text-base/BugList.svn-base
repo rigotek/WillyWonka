@@ -1,0 +1,7 @@
+Bug List
+
+Bug									Date				Problem												Fixed?
+Kits not created					11/9/11				Kits are not being created in the integrated		
+														driver so the parts robot can't move.		
+
+														

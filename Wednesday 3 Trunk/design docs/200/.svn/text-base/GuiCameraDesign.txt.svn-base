@@ -1,0 +1,231 @@
+Author: Jonathan Chu
+--------------------------V0----------------------------------
+public class GuiCamera implements Gui {
+
+            int currX;
+
+            int currY;
+
+ 
+
+    private CameraAgent myAgent = null;
+
+    private boolean readyToTakePicture;
+
+ 
+
+    public CameraGui(CameraAgent agent, int locX, int locY){
+
+                         this.myAgent = agent;
+
+                         readyToTakePicture = false;
+
+                         currX = locX;
+
+                         currX = locY;
+
+    }
+
+ 
+
+    public void draw(Graphics2D g){
+
+                         if(readyToTakePicture)
+
+                         {
+
+                                     //DRAW Flash
+
+                                     readyToTakePicture = false;
+
+                                     myAgent.msgDoneTakingPicture();   
+
+                         }
+
+    }
+
+ 
+
+            public void updateLocation(){
+
+        //does nothing
+
+    }
+
+ 
+
+            public void partsCallback(){
+
+                        //Tells lane that part has moved to specific location. Starts lining up part in lane.
+
+            }
+
+ 
+
+    public int getCurrentX(){
+
+                        return currX;
+
+            }
+
+ 
+
+            public int getCurrentY(){
+
+                        return currY;
+
+            }
+
+ 
+
+            public int getDestinationX(){
+
+                        return currX();
+
+            }
+
+ 
+
+            public int getDestinationY(){
+
+                        return currY();
+
+            }
+
+ 
+
+    public void doTakePicture(){
+
+                         readyToTakePicture = true;
+
+    }
+
+}
+
+--------------------------------------V1/V2------------------------------
+package gui;
+
+import engine.agents.KitCameraAgent;
+import engine.agents.LaneCameraAgent;
+import gui.interfaces.Gui;
+import gui.interfaces.GuiCameraInterface;
+import gui.locationsimg.Images;
+
+import java.awt.Graphics;
+
+
+/**
+ * 
+ * @author Jonathan Chu
+ *
+ */
+public class GuiCamera implements GuiCameraInterface, Gui 
+{
+     
+     public GuiCamera(int locX, int locY)
+     {
+    	 Set all the values for the camera
+     }
+     
+     public void draw(Graphics g)
+     {
+    	Check to see if the camera has been told to flash
+	First draw teh base, rectangle
+	If the camera needs to flash, draw the flash image on top of teh box
+     }
+
+     public void updateLocation()
+     {
+    	If the camera is told to flash, it will increment the counter
+	If the camera is idle then it does nothing
+     }
+
+
+
+     public void partsCallback()
+     {
+         //Tells lane that part has moved to specific location. Starts lining up part in lane.
+     }
+     
+     public void setAgent(LaneCameraAgent newLaneCameraAgent)
+     {
+    	 whichVersion = 1;
+    	 myLaneCamera = newLaneCameraAgent;
+     }
+
+     
+     public void setAgent(KitCameraAgent newKitCameraAgent)
+     {
+    	 whichVersion = 2;
+    	 myKitCamera = newKitCameraAgent;
+     }
+     
+     
+     public int getCurrentX()
+     {
+         return currX;
+     }
+
+     public int getCurrentY()
+     {
+          return currY;
+     }
+
+     public int getDestinationX()
+     {
+          return destX;
+     }
+
+     public int getDestinationY()
+     {
+          return destY;
+     }
+
+     public void doTakePicture()
+     {
+          readyToTakePicture = true;
+     }
+
+	public void partCallback(Gui part) 
+	{
+		//Does Nothing
+	}
+
+	public void setDestination(int x, int y) 
+	{
+		//Does Nothing
+		
+	}
+
+	public void enable() 
+	{
+		myState = Power.ON;
+	}
+
+	public void disable() 
+	{
+		myState = Power.OFF;
+	}
+
+	public Power checkPower() 
+	{
+		return myState;
+	}
+
+	public void destroy() 
+	{
+		alreadyBroken = true;
+		disable();
+	}
+
+	public void repair() 
+	{
+		enable();
+	}
+
+	public boolean checkRepair() 
+	{
+		return alreadyBroken;
+	}
+
+}

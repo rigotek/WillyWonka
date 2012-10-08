@@ -1,0 +1,108 @@
+Class: Gui Lane
+Author: Christian Vanderwall
+
+
+Variables:
+
+	  private boolean flag;
+	
+	  private Power Power;
+	  
+	  private LaneAgent AgentLane; 
+	  
+	  private GuiOcean Ocean;
+	  
+	  private int VibrationSpeed;
+	  
+	  private LinkedList<GuiCandy> CandyQueue;
+	  
+	  private LinkedList<GuiCandy> LostCandy;
+	  
+	  private LinkedList<GuiBubble> Bubbles;
+	  
+	  private int LaneSize;
+	  
+	  private static int BORDERSIZE = 5;
+	  
+	  private int Belt; // Used in animation
+	  
+	  private int currX;
+	  
+	  private int currY;
+	  
+	  private int[] Pos;  // Final positions still need to be decided
+	  
+Constructor:
+
+	  public GuiLane(int x, int y) {
+	   
+Methods:	  
+
+	  public void setAgent(LaneAgent a) {
+		// Sets the reference to the lane agent	  
+
+	  public void draw(Graphics g) {
+		// Draws the lane and all of the candies on it	  
+
+	  public void updateLocation(){
+		// Calls the update location of all the candies and bubbles		  	
+
+	  public void vibrationCheckIfFalls() {
+		// As parts move down the lane they have a chance to fall depending on the vibration speed
+	  
+	  public int getCurrentX(){
+		// Returns X
+	  
+	  public int getCurrentY(){
+	  	// Returns Y
+
+	  public int getDestinationX(){
+		// does nothing
+	  
+	  public int getDestinationY(){
+		// Does nothing
+	  
+	  public void DoMoveToLane(Holdable p) {
+		// adds a candy to the lane
+	  
+	  public void AdvanceCandies() {
+		// Moves each candy farther down the gui lane
+		// Also handles the vibration of the candy 	
+		// For every candy in the lane
+	  
+	  public void partCallback(Gui c) {
+		// Signifies that the candy has moved to its specified location
+		// The candy in the front of the candyqueue will call this method once it gets to the end of the lane
+		// The candies that fall off will call this as well
+	   
+	  public void DoRemoveFromLane(Holdable p) {
+		// Agent call from backend
+	        // Moves the candy at the front of the queue into the Nest
+	  
+	  public void bubbleCandies() {
+		// All of the candies on the lane are captured by bubbles and sent up 
+	  
+	  public LinkedList<GuiBubble> getBubbles() {
+		// returns the list of bubbles	
+
+   	  public void setDestination(int x, int y) {
+		// does nothing
+
+	  public void enable() {
+		// Turns power on
+
+	  public void disable() {
+		// Turns power off
+
+	  public Power checkPower() {
+		// Returns power
+
+  	  public void destroy() {
+		// Turns power off
+
+	  public void repair() {
+		// Turns power on
+
+	  public boolean checkRepair() {
+		// Returns power
+

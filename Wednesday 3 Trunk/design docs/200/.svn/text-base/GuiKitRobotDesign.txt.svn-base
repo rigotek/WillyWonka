@@ -1,0 +1,322 @@
+GuiKitRobot --- Sumukh Anand
+
+//SUPERCLASSES
+//==========================================================
+public abstract class GuiRobot implements Gui{
+	int currX;
+	int currY;
+	int destX;
+	int destY;
+	
+	int currAngle;
+	int destAngle;
+	Holdable[] armContents;	
+	Bitmap robot;
+		
+	public void draw(Graphics g){
+		//Draw robot at currX, currY
+	}
+		
+	public void updateLocation(){
+		//currX+=value towards destX;
+		//currY+=value towards destY;
+		//rotate() towards destAngle;
+	}
+		
+	public void partsCallback(){
+		//do nothing;
+	}
+		
+	public int getCurrentX(){
+		return currX;
+	}
+		
+	public int getCurrentY(){
+		return currY;
+	}
+		
+	public int getDestinationX(){
+		return destX();
+	}
+		
+	public int getDestinationY(){
+		return destY();
+	}
+		
+	public void rotate(){
+		//Rotate robot by __degrees towards destAngle;
+		//Rotate armContents by __degrees towards destAngle;
+		currAngle+=degrees;
+	}
+		
+	public void setRotation(int angle){
+		//Set destination angle value
+		destAngle = angle;
+	}
+		
+	public void setDestination(int x, int y){
+		//Set destination X and Y values
+		destX = x;
+		destY = y;
+	}
+}
+//==========================================================
+
+
+//CLASSES
+//==========================================================
+public class GuiKitRobot extends GuiRobot{
+	public enum State {
+		FREE,
+		TO_IDLE,
+		AT_IDLE,
+		TO_KIT_STAND,
+		AT_KIT_STAND,
+		TO_KIT_BELT, 
+		AT_KIT_BELT
+		TO_KIT_CAMERA,
+		AT_KIT_CAMERA
+	}
+
+	const int idleX;
+	const int idleY;
+	const int beltX;
+	const int beltY;
+	
+	State currState;
+	GuiKit kitToCheck;
+	GuiKit kitToMove;
+	Agent kitRobot
+	
+	GuiKitRobot(int x, int y){
+		//Create robot
+		currX = x;
+		currY = y;
+	}
+	
+	GuiKitRobot(){
+		//Create robot
+		currX = 0;
+		currY = 0;
+	}
+	
+	public void setAgent(Agent agent){
+		//Set the agent
+		kitRobot = agent;
+	}
+	
+	public void draw(Graphics g){
+		//Draw parts that robot is holding
+		for (loop through armContents){
+			armContents[i].draw();
+		}
+		
+		super.draw(g);
+	}
+	
+	public void updateLocation(){
+		//Send messages according to State
+		switch(currState){
+			case(TO_IDLE):
+			break;
+			
+			case(AT_IDLE):
+				currState = FREE;
+			break;
+			
+			case(TO_KIT_STAND):
+				//if (at kit stand)
+					//grab kit
+			break;
+			
+			case(AT_KIT_STAND):
+			kitRobot.animationDone();
+			break;
+			
+			case(TO_KIT_BELT):
+				//if (at kit belt)
+					//grab kit
+			break;
+			
+			case(AT_KIT_BELT):
+				kitRobot.animationDone();
+			break;
+		
+			case(TO_KIT_CAMERA):
+				//if (at kit camera)
+					//drop kit
+			break;
+			
+			case(AT_KIT_CAMERA):
+				kitRobot.animationDone();
+			break;
+		
+		super.updateLocation(){
+	}
+	
+	public void DoGoToIdle(){
+		//Set destination X and Y to idle X and Y
+		destX = idleX;
+		destY = idleY;
+		
+		currState = TO_IDLE;
+	}
+	
+	public void DoCreateAKit(){
+		//Set destination X and Y to belt X and Y
+		destX = beltX;
+		destY = beltY;
+		
+		currState = TO_KIT_BELT;
+	}
+	
+	public void DoMoveKitToStand(GuiKit kit){
+		//Pick up empty kit and set destination X and Y to kit X and Y
+		destX = kit.getX();
+		destY = kit.getY();
+		kitToMove = kit;
+		
+		currState = TO_KIT_STAND;
+	}
+	
+	public void DoMoveKitToCameraInspection(GuiKit kit){
+		//Pick up full kit and set destination X and Y to camera X and Y
+		destX = cameraX;
+		destY = cameraY;
+		kitToMove = kit;
+		
+		currState = TO_KIT_CAMERA;
+	}
+	
+	public void DoMoveFinishedKitToDeliveryStation(GuiKit kit){
+		//Pick up checked kit and set destination X and Y to boat X and Y
+		destX = boatX;
+		destY = boatY;
+		kitToMove = kit
+		
+		currState = TO_KIT_BOAT
+	}
+}
+//==========================================================
+
+FINAL DESIGN **********************
+GuiKitRobot
+
+extends GuiRobot 
+implements Gui, GuiKitRobotInterface
+
+//state that will be used in the state machine
+	public enum State {
+		FREE,
+		TO_IDLE,
+		AT_IDLE,
+		TO_KIT_STAND_PICKUP,
+		TO_KIT_STAND_DROPOFF,
+		AT_KIT_STAND,
+		TO_KIT_BELT, 
+		AT_KIT_BELT,
+		TO_KIT_CAMERA_PICKUP,
+		TO_KIT_CAMERA_DROPOFF,
+		AT_KIT_CAMERA,
+		TO_KIT_BOAT,
+		AT_KIT_BOAT
+	}
+
+	private boolean badKit; //is set if there is a bad kit
+	private State currState; //current state that is dealt with in the state machine
+	private GuiKit kitToCheck; //kit that needs to be checked in the checking station
+	private GuiKit kitToMove; //kit that needs to be moved
+	private KitPosition kitPos; // kit position
+	private KitRobotAgent kitRobot; // instance of the agent that will call the GUI
+
+	//constructor that sets the first state
+	public GuiKitRobot(int x, int y){
+		super(x, y);
+		currState = State.FREE;
+	}
+
+	//constructor that will set the current locations that are hard-coded
+	public GuiKitRobot(){
+		super();
+		currX = Locations.kitRobotX;
+		currY = Locations.kitRobotY;
+		destX = Locations.kitRobotX;
+		destY = Locations.kitRobotY;
+		currState = State.FREE;
+	}
+
+	//A state machine that will update the location of the gui (this is a super method call)
+	public void updateLocation(){
+		if (isRevolting || broken){
+			//updating location
+		}
+		
+		//Send messages according to State
+		switch(currState){
+		case TO_IDLE:
+			//nothing happens
+
+		case AT_IDLE:
+			//changes state to free
+
+		case TO_KIT_STAND_PICKUP:
+			//moves the kit from the kit stand to the checking station
+
+		case TO_KIT_STAND_DROPOFF:
+			//moves the gui kit robot to the kit dropoff
+		
+		case AT_KIT_STAND:
+			//returns a message 
+			
+			case(TO_KIT_BELT):
+				//if (at kit belt)
+					//grab kit
+			break;
+			
+			case(AT_KIT_BELT):
+				kitRobot.animationDone();
+			break;
+		
+			case(TO_KIT_CAMERA):
+				//if (at kit camera)
+					//drop kit
+			break;
+			
+			case(AT_KIT_CAMERA):
+				kitRobot.animationDone();
+			break;
+		
+		updates locations based on states and calls the universal super updateLocations() at the end of the scheduler/state machine
+	}
+
+	@
+	public void setAgent(KitRobotAgent agent) {
+		//set agent
+	}
+
+	@Override
+	public void DoGoToIdle() {
+		//Set destination X and Y to idle X and Y
+	}
+
+	@Override
+	public void DoMoveKitToStand(GuiKit kit, KitPosition pos) {
+		//Pick up empty kit and set destination X and Y to kit X and Y
+	}
+
+	@Override
+	public void DoMoveKitToCameraInspection(GuiKit kit, KitPosition pos) {
+		//Pick up full kit and set destination X and Y to camera X and Y
+		
+	}
+
+	@Override
+	public void DoMoveFinishedKitToDeliveryStation(GuiKit kit) {
+		//Pick up checked kit and set destination X and Y to boat X and Y
+	}
+
+	@Override
+	public void DoMoveKitBackToStand(GuiKit kit, KitPosition pos) {
+		//moves kit back to stand if it is a bad kit
+	}
+}

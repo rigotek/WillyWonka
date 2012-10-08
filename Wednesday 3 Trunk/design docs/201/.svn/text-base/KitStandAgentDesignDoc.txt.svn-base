@@ -1,0 +1,30 @@
+public class KitStandAgent{
+
+	KitRobotAgent kr;
+	Kit kit;
+	enum STATE = {NO_ACTION,MAKING_KIT,KIT_DONE}
+	
+	void msgHereIsNextKit(Kit){
+		kit = Kit;
+		STATE = MAKING_KIT;
+	}
+	
+	if(state = MAKING_KIT){
+		makeKit();
+	}
+	if(state = KIT_DONE){
+		kitDone();		
+	}
+	
+	makeKit(){
+		//change Kit state to done
+		STATE = KIT_DONE;
+		stateChanged();
+	}
+	
+	kitDone(){
+		kr.msgKitIsDone(kit);
+		STATE = NO_ACTION;
+		stateChanged();
+	}
+	

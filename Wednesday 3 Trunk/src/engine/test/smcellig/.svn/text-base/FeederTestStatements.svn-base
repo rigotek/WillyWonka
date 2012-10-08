@@ -1,0 +1,57 @@
+FeederTestStatements
+
+//Pick And Excute An Action
+assertFalse("Scheduler shouldn't enter into an action", feeder.pickAndExecuteAnAction());
+assertTrue("Scheduler should enter into an action", feeder.pickAndExecuteAnAction());
+
+//Booleans
+assertTrue("The needToPurgeBin variable should equal 'true'", feeder.needToPurgeBin());
+assertFalse("The needToPurgeBin variable should equal 'equal'", feeder.needToPurgeBin());
+
+//States:
+assertEquals("The ifs should be 'initial'", "initial", feeder.ifs());
+assertEquals("The ifs should be 'requestedBin'", "requestedBin", feeder.ifs());
+assertEquals("The ifs should be 'receivedBin'", "receivedBin", feeder.ifs());
+assertEquals("The ifs should be 'waitingToMoveBinDownLane'", "waitingToMoveBinDownLane", feeder.ifs());
+assertEquals("The ifs should be 'checkingDiverterPosition'", "checkingDiverterPosition", feeder.ifs());
+assertEquals("The ifs should be 'checkingNumberOfSpotsOpenInLane'", "checkingNumberOfSpotsOpenInLane", feeder.ifs());
+assertEquals("The ifs should be 'checkIfNeedToChangePartType'", "checkIfNeedToChangePartType", feeder.ifs());
+assertEquals("The ifs should be 'messagingRequestForNumberOfSpotsInLane'", "messagingRequestForNumberOfSpotsInLane", feeder.ifs());
+assertEquals("The ifs should be 'waitingForPartToBeMovedIntoLane'", "waitingForPartToBeMovedIntoLane", feeder.ifs());
+assertEquals("The ifs should be 'waitingForBinToBePurged'", "waitingForBinToBePurged", feeder.ifs());
+
+initial, requestedBin,
+		/** loadBin states */
+		receivedBin, waitingToMoveBinDownLane, checkingDiverterPosition,
+		/** unloadPart states */
+		checkingNumberOfSpotsOpenInLane, checkIfNeedToChangePartType,
+		messagingRequestForNumberOfSpotsInLane, waitingForPartToBeMovedIntoLane,
+		/** purgeBin state */
+		waitingForBinToBePurged, decideToMessageGantryForReturnBin, waitingForAReturnBin, notRequestedABin
+
+
+//values
+assertEquals("The requested Part type should be TYPE1", "TYPE1", feeder.iNeedThisPartType();
+assertEquals("The list of lanes that need to be updated should now be equal to 0", 0, 
+					feeder.updatedLanes().size());
+assertEquals("The bottomPartTypePart should be changed to the new part type.", partType2,
+					feeder.bottomPartType());
+
+//message log size
+assertEquals("Checking to see if the number of messages that have been sent to the Bottom Lane" +
+					" Agent is equal to 0.", 0, bottomLane.log.size());
+assertEquals("Checking to see if the number of messages that have been sent to the Top Lane" +
+				" Agent is equal to 1.", 1, topLane.log.size());
+assertEquals("Checking to see if the number of messages that have been sent to the Gantry" +
+					"is equal to 1.", 1, gantry.log.size());
+
+//animation call backs
+feeder.donePurgeBin();
+feeder.doneMoveBinDownFeederLane();
+feeder.doneUnloadPartIntoLane();					
+feeder.doneMoveDiverterToPosition();
+
+//messages called to the agent
+feeder.msgChangeToThisPart(bottomLane, partType);
+feeder.msgHereIsBin(bin1);
+feeder.msgLaneSpotsOpen(lane, spotsOpen);					

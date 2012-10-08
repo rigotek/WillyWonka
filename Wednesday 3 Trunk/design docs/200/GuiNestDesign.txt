@@ -1,0 +1,97 @@
+Class: GuiNest
+Author: Christian Vanderwall
+
+Variables:
+
+	private Power Power;
+	
+	private NestAgent AgentNest; 
+	
+	private GuiOcean Ocean;
+
+	private LinkedList<Holdable> CandyQueue;
+	
+	private LinkedList<Holdable> LostCandy;
+	
+	private LinkedList<GuiBubble> Bubbles;
+
+	private int NestSize;
+
+	private int currX;
+
+	private int currY;
+
+	private int[] PosX;
+	private int[] PosY;
+
+
+Constructor:
+
+	public GuiNest(int x, int y) {
+
+	public void setAgent(NestAgent a) {
+	
+	public void draw(Graphics g) {
+		// Draws the nest and the things it contains
+
+	public void updateLocation(){
+		// Calls the update location method of all the candies in the nest
+	
+	public void purgeNest() {
+		// removes all candy from the nest	
+
+	public void purgePart(Holdable h) {
+		// removes a specific part from the nest
+
+	public int getCurrentX(){
+		// returns x
+
+	public int getCurrentY(){
+		// returns y
+
+	public int getDestinationX(){
+		// returns dest X
+
+	public int getDestinationY(){
+		// returns guest y
+
+	public void DoPutInNest(Holdable p) {
+		// Agent call from backend
+		// takes a part from the last space in the lane and move it to the nest
+
+	public void AdvanceCandies() {
+		// Set all candies to go to their locations
+
+	public void partCallback(Gui o) {
+		// Candies that get purged will call this when they reach their destination
+
+	public void DoRemoveFromNest(Holdable p) {
+		// Agent call from backend
+		// takes a part from the nest and removes it
+	
+	public LinkedList<GuiBubble> getBubbles() {
+		// Returns bubbles linked list
+
+	public void setDestination(int x, int y) {
+		// does nothing
+	
+	public void enable() {
+		// turns power on
+
+	public void disable() {
+		// turns power off
+
+
+	public Power checkPower() {
+		// returns power
+
+	public void destroy() {
+		// turns power off
+
+
+	public void repair() {
+		// turns power off
+
+	public boolean checkRepair() {
+		// returns power
+

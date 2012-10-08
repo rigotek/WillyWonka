@@ -1,0 +1,277 @@
+GuiDiverter
+David Tan
+
+public class GuiDiverter implements Gui
+{
+	private int currX;
+	private int currY;
+	// current location of diverter unit
+	
+	private int topY;
+	private int bottomY;
+	// top and bottom exits of the diverter unit
+	
+	private boolean direction; // determines which belt to load
+	private enum State { IDLE, NOT_IDLE, BROKEN } // idle is inactive state,
+	// not idle is active state, meaning it is changing direction or moving
+	// a part, and broken is non-normative condition
+	
+	private State currentState;
+	private Agent agent;
+	
+	public GuiDiverter(int x, int y, Agent agent)
+	{
+		currX = x; // current x location
+		currY = y; // current y location
+		topY = currY + 10; // top exit location
+		bottomY = currY + 40; // bottom exit location
+		
+		direction = false; // false is up, true is down
+		currentState = State.IDLE; // default state is idle
+		this.agent = agent; // reference to actual Diverter
+	}
+
+	public void doMoveDiverterToPosition(char direction)
+	{
+		// sets state to change the current direction of the diverter
+		// only if the current direction is different from the input
+		// direction; reads either 'u' or 'd' as specified by API
+		// doneMoveDiverterToPosition();
+	}
+	
+	public void doUnloadPartIntoLane(GuiPart param)
+	{
+		// the direction is assumed to be correct and objects from
+		// the feeder unit are transferred through the diverter unit
+		// onto the conveyor belts to the kitting process
+		// doneUnloadPartIntoLane();
+	}
+	
+	public void partsCallback() // called by GuiPart once movement is complete
+	{
+		doneUnloadPartIntoLane();
+		currentState = State.IDLE;
+	}
+	
+	public void updateLocation() // for implementing interface
+	{
+		// does nothing
+	}
+	
+	public void draw(Graphics g)
+	{
+		// drawing the diverter unit etc, thought process to be fleshed
+		// out at another time
+	}
+	
+	public int getCurrentX() // for implementing interface
+	{
+		return currX;
+	}
+	
+	public int getCurrentY() // for implementing interface
+	{
+		return currY;
+	}
+	
+	public int getDestinationX() // for implementing interface
+	{
+		return currX;
+	}
+	
+	public int getDestinationY() // for implementing interface
+	{
+		return currY;
+	}
+	
+	public void setX(int x) // for implementing interface
+	{
+		currX = x;
+	}
+	
+	public void setY(int y) // for implementing interface
+	{
+		currY = y;
+	}
+}
+
+/**
+ * Graphical representation of the Diverter part of the Feeder agent, only interprets method
+ * calls from the parent agent and alters the graphics to depict such. Contains no logic or
+ * any ability to check data.
+ * 
+ * @author David Tan
+ */
+ 
+=============================================
+GuiDiverter implements Gui, GuiDiverterInterface {
+=============================================
+	/** Represents completion status of the GuiCandy, used in partCallback(). */
+	private boolean flag;
+	/** Represents whether the GuiDiverter has been previously damaged or not. */
+	private boolean damaged;
+	
+	/** Represents current x-coordinate of the GuiDiverter. */
+	private int currX;
+	/** Represents current y-coordinate of the GuiDiverter. */
+	private int currY;
+	/** Represents current height of the GuiDiverter. */
+	private int currHeight;
+	/** Represents current width of the GuiDiverter. */
+	private int currWidth;
+	/** Represents current y-coordinate of the top exit of the GuiDiverter. */
+	private int topY;
+	/** Represents current y-coordinate of the centre of the GuiDiverter. */
+	private int centreY;
+	/** Represents current y-coordinate of the bottom exit of the GuiDiverter. */
+	private int bottomY;
+	/** Represents current increment of the lines on the GuiDiverter belt. */
+	private int beltCount;
+	/** Represents the current vibration speed of the GuiDiverter as specified by the UserData class. */
+	private int vibrationSpeed;
+=============================================	
+	/** Holds all possible states of the GuiDiverter. */
+	/** Signifies the GuiDiverter is currently idle. */
+	/** Signifies the GuiDiverter is moving an object. */
+	/** Signifies non-normative condition where the GuiDiverter does not function properly. */
+	private enum State {
+
+	/** Holds all possible states of the GuiCandy. */
+	/** Signifies the GuiCandy is not present. */
+	/** Signifies the GuiCandy is moving to the centre. */
+	/** Signifies the GuiCandy is moving vertically towards an exit. */
+	/** Signifies the GuiCandy is moving horizontally towards an exit. */
+	/** Signifies the GuiCandy has finished moving. */
+	private enum Candy {
+	
+	/** Holds all possible directions of the GuiDiverter. */
+	/** Signifies the GuiDiverter is oriented downwards. */
+		/** Enum that represents the current power status. */
+	/** Enum that represents current state of the GuiDiverter. */
+	/** Enum that represents current direction of the GuiDiverter. */
+	/** Enum that represents current state of the GuiCandy. */
+	/** FeederAgent reference that represents the parent agent that controls the GuiDiverter. */
+	/** GuiCandy reference that represents current GuiCandy being moved by the GuiDiverter. */
+	//private enum Direction {
+	
+	/**
+	 * Public constructor for the GuiDiverter. Note that currX and currY
+	 * refer to the top-left corner of the diverter.
+	 * 
+	 * @param x Sets the x-coordinate of the GuiDiverter
+	 * @param y Sets the y-coordinate of the GuiDiverter
+	 */
+	public GuiDiverter(int x, int y)
+		
+	/**
+	 * Draws the GuiDiverter depending on whether there is a GuiCandy object
+	 * being moved or not; animated belts draw depending on current direction
+	 * of the two arms. The GuiDiverter belts are always moving regardless of
+	 * presence of a GuiCandy.
+	 * 
+	 * @param g Graphics component
+	 */
+	public void draw(Graphics g) {
+		// Draw the base image.
+		// Set the tool to grey for drawing lines.		
+		// Draw lines on the GuiDiverter to simulate movement.
+	    // Draw the candy if the GuiDiverter is currently active and the candy exists.		
+		// Draw all images for the GuiDiverter scrolling upwards.
+		// Draw all images for the GuiDiverter scrolling downwards.
+		// Draw the hood over the GuiDiverter.
+	
+	/**
+	 * Called by the GuiCandy object after it reaches the destination to which the GuiDiverter
+	 * instructed it to go. Sets a flag in GuiDiverter to store this information.
+	 * 
+	 * @param part Part that called partCallback()
+	 */
+	public void partCallback(Gui part) {
+		
+	/**
+	 * Called by draw() to update the location of the candy if the candy is present.
+	 * Otherwise, updateLocation() does nothing.
+	 */
+	public void updateLocation() {
+		
+	/**
+	 * Called by updateLocation() whenever the state changes so that the GuiDiverter may update
+	 * the destination of the GuiCandy passed to the GuiDiverter in doUnloadPartIntoLane().
+	 */
+	public void stateChanged() {
+		
+	/**
+	 * Vibrates the current candy being unloaded depending upon which location on the GuiDiverter
+	 * it is located. If it is currently travelling horizontally, it can vibrate in one of three ways
+	 * vertically; if it is currently travelling vertically, it can vibrate horizontally and travel
+	 * depending on its prior destination.
+	 */
+	public void vibrateDiverter() {
+
+	/**
+	 * Called by the parent FeederAgent to switch direction to either up or
+	 * down. The method checks to see if the GuiDiverter needs to switch direction,
+	 * and if necessary, changes the current direction to the new direction. It
+	 * assumes that the call is always correct and does not check for errors.
+	 * 
+	 * @param direction States the desired direction for the GuiDiverter
+	 */
+	public void doMoveDiverterToPosition(char direction) {
+
+	/**
+	 * Called by the parent FeederAgent to transfer an object of type GuiCandy
+	 * down the current lane. The direction is assumed to be correct, and the
+	 * GuiCandy object passed into the method is then given the order to move down
+	 * the GuiDiverter to one of the two exits depending on which direction the
+	 * GuiDiverter is currently facing.
+	 * 
+	 * @param param FeederAgent parent passes this GuiCandy parameter to move
+	 */
+	public void doUnloadPartIntoLane(GuiCandy param) {
+		
+	public void enable() {
+		
+	public void disable() {
+		
+	public Power checkPower() {
+		
+	public void destroy() {
+		
+	public void repair() {
+		
+	public boolean checkRepair() {
+		
+	/**
+	 * Setter for the parent agent.
+	 * 
+	 * @param agent Sets current parent FeederAgent
+	 */
+	public void setAgent(FeederAgent agent) {
+		
+	/** Getter for current x-coordinate of the GuiDiverter. */
+	public int getCurrentX() {
+		
+	/** Getter for current y-coordinate of the GuiDiverter. */
+	
+	public int getCurrentY() {
+		
+	/**
+	 * Getter for current x-coordinate of the destination of the GuiDiverter.
+	 * Does nothing by nature of the immobile GuiDiverter and it will return currX.
+	 */
+	public int getDestinationX() {
+		
+	/**
+	 * Getter for current y-coordinate of the destination of the GuiDiverter.
+	 * Does nothing by nature of the immobile GuiDiverter and it will return currY.
+	 */
+	public int getDestinationY() {
+	
+	/**
+	 * Setter for the destination coordinates of the GuiDiverter.
+	 * Not used by nature of the immobile GuiDiverter.
+	 * 
+	 * @param x sets x-coordinate of destination
+	 * @param y sets y-coordinate of destination
+	 */
+	public void setDestination(int x, int y) {

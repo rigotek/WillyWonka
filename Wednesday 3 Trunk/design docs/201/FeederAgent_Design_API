@@ -1,0 +1,646 @@
+Design Doc - Feeder Agent - Shannon McElligott
+
+Description:
+The Feeder Agent has two parts combined into it that work together: the feeder and the divertor.
+The feeder will receive a bin from the gantry and move it onto the feeder belt which will move
+the bin down towards the diverter where it stops.  When it arrives, it checks to make sure that
+the lane the parts will enter into has spots and that the diverter is in the proper position.  
+At this point each part is sent to the lane until the lane gets full or the feeder runs out of
+parts to send.  At this point, the bin is purged and a new bin (of a determined type) is requested.
+The feeder will receive the following messages:
+	msgHereIsBin(Bin) from the GantryAgent
+	msgLaneSpotsOpen(int) from the Lane
+The feeder will send the following messaged:
+	msgINeedThisPartType(typePart) to the GantryAgent
+	msgReturnBin() to GantryAgent
+	msgReturnAndRequestBin() to Gantry Agent
+	msgRequestNumnerOfOpenSpots() to the LaneAgent
+	msgHereIsPart(Part) to the LaneAgent
+
+API:
+guiFeeder
+doMoveBinDownFeederLane(Bin) Ð This will move one bin (sent in as a parameter)
+down a the belt to the end [space ÒXÓ on the Willy Wonka Chocolate Factory Part A diagram]. 
+	Action Complete Method Call: ÊdoneMoveBinDownFeederLane()
+
+doPurgeBin() Ð This will dump the bin that is currently on the belt [on position ÒXÓ].
+It will only be called when a bin is on position ÒXÓ. ÊThis should return the bin to
+a position where the gantry robot can pick it up [so move to the location where it was
+dropped off.
+Action Complete Method Call: ÊdonePurgeBin()
+
+
+guiDivertor
+doMoveDiverterToPosition(char direction) Ð This call will tell the diverter to move its
+arm up or down. The methods parameter will consist of a char which will determine the
+direction the deflector should be in: up or down ( u or d ).
+	Action Complete Method Call: ÊdoneMoveDiverterToPosition()
+
+doUnloadPartIntoLane(Part) Ð This should move a part (sent in as a parameter) from the
+bin tothe diverter into the upper or lower part of the diverter depending on the current
+position of the dividing arm. ÊThen the part should slide into the first slot of the
+designated lane.
+	Action Complete Method Call: ÊdoneUnloadPartIntoLane()
+
+
+
+Data
+
+// Enum that will be set in response to a message from the top lane or constructor telling
+//the feeder what type of part the top lane is producing/what it needs to order
+ PartType topPartType = null;	
+// Enum that will be set by a message from the top lane or constructor telling
+// the feeder what type of part the top lane is producing/what it needs to order
+ PartType bottomPartType = null;
+
+//LIST OF THE AGENTS THAT THE FEEDER PASSES MESSAGES TO
+// This is the top lane agent that will be called when the lane has parts that
+// are specific to that lane (topPartType)
+ Lane topLaneAgent;
+// This is the bottom lane agent that will be called when the lane has parts that
+// are specific to that lane (bottomPartType) 
+ Lane bottomLaneAgent;
+// Gantry agent that will send new bins and pick up old bins 
+ Gantry	gantryAgent;
+
+//LIST OF ALL THE GUI THAT THE FEEDER CALLS
+// Gui feeder that is sent messages by the feeder 
+ GuiFeeder	guiFeeder;
+// Gui diverter that will be messaged when a part needs to be passed 
+ GuiDiverter	guiDiverter;
+
+// The current bin that is in the feeder 
+ AgentBin bin;
+
+// number of spots open in the top lane 
+ int topLaneSpotsOpen = 0;
+// number of spots open in the bottom lane 
+ int bottomLaneSpotsOpen = 0;
+// counts the number of times the number of parts has been requested from the 
+// current lane that is being sent parts
+ int counterOfLaneSpotRequests = 0;
+
+// List of lanes whose part types need to be updated
+ List<UpdatedLane> updatedLanes = Collections.synchronizedList(new ArrayList<UpdatedLane>());
+
+// Class that is used to store the data of lanes that need to be updated 
+public class UpdatedLane{			
+	// 0 (false) for top; 1 (true) for top 
+	boolean position;
+	// PartType that is the new part type in the specified lane 
+	PartType partType;
+}
+
+
+//Testing Variables:
+// counts the number of times the lane can be requested  
+int counterLimitOfRequests = 1;
+// only creates 10 parts 
+boolean testV0 = false;
+// Used for testing to avoid calling the GUI actions 
+ boolean guiIsOn = true;
+
+// direction that the diverter is moving 
+ boolean diverterDirectionIsUp = true; 
+
+// part type that will be requested by the feeder once the bin has been purged 
+PartType iNeedThisPartType = null;
+
+
+//BOOLEANS THAT CHANGE WHEN ACTION RETURN METHODS ARE CALLED
+// set in the message that receives the bin from the gantry 
+ boolean binIsHere = false;
+// booleans that are set during actions that allow the states to switch between states 
+ boolean movedBinDownFeederLane = false;
+ boolean diverterIsInProperPosition = false;
+ boolean laneHasOpenSpots = false;
+ boolean requestNumberOfSpotsInLane = false;
+ boolean needToPurgeBin = false;
+ boolean binHasBeenPurged = false;
+ boolean noNeedToChangePartTypes = false;
+ boolean doneMovingPart = false;
+ boolean receivedNumberOfSpotsInLane = false;
+
+// agent part; this will be passed to the laneAgent 
+ AgentPart agentPart;
+
+public enum FeederState { 	
+	// large feeder states 
+	loadBin, unloadPart, purgeBin, idle
+}
+ FeederState feederState;
+
+public enum InternalFeederState {
+	// idle states 
+	initial, requestedBin,
+	// loadBin states 
+	receivedBin, waitingToMoveBinDownLane, checkingDiverterPosition,
+	// unloadPart states 
+	checkingNumberOfSpotsOpenInLane, checkIfNeedToChangePartType,
+	messagingRequestForNumberOfSpotsInLane, waitingForPartToBeMovedIntoLane,
+	// purgeBin state 
+	waitingForBinToBePurged
+
+}
+ InternalFeederState internalFeederState;
+}
+
+
+
+Message Reception
+NOTE: MESSAGES MUST BE PUBLIC IN ORDER FOR OTHER AGENTS TO CALL THEM...
+
+//message called by the lane that requests the feeder to switch a certain partType in its lane
+//to a new part type; will add the new partType to array updatedLanes
+public void msgChangeToThisPart(Lane lane, PartType partType) {
+	if (lane == topLaneAgent) {
+		//false and true correspond to position (which lane... top = false, bottom = true)
+		UpdatedLane updatedLane = new UpdatedLane(false, partType);
+		//put into an array of updated lane requests
+		updatedLanes.add(updatedLane);
+	}
+	else {
+		UpdatedLane updatedLane = new UpdatedLane(true, partType);
+		updatedLanes.add(updatedLane);
+	}
+	stateChanged(); //want to change state in message
+}
+
+// message called by the gantry, passing the feeder then new bin
+public void msgHereIsBin(AgentBin newBin) {
+	bin = newBin; //sets the Feeder bin to new bin that was delivered
+	//binIsHere will be used in the scheduler 
+	binIsHere = true;
+	stateChanged(); //want to change state in message
+}
+
+// message called by the LaneAgent once the number of spots has been requested by the feeder
+public void msgLaneSpotsOpen(Lane lane, int spotsOpen) {
+	if (lane == topLaneAgent) {
+		//updates spots number
+		topLaneSpotsOpen = spotsOpen;
+		//this will set a boolean to go into new feederState loadBin
+		receivedNumberOfSpotsInLane = true;
+	}		
+	if (lane == bottomLaneAgent) {
+		bottomLaneSpotsOpen = spotsOpen;
+		receivedNumberOfSpotsInLane = true;
+	}
+	stateChanged(); //want to change state in message
+}
+
+
+Scheduler
+//basic state machine... have 3 larger states (used for organization), and a lot of smaller states
+//that will be used for the main state changes.  the changes from the states will be based on lots
+//of booleans being changed during the actions, such as "diverterIsInProperPosition",
+//"movedBinDownFeederLane", etc.
+
+////initial/idle state
+if (feederState == FeederState.idle) {
+	if (internalFeederState == InternalFeederState.initial) {
+		synchronized(updatedLanes) {
+			if (updatedLanes.size() > 0) {
+			//if need to update the lanes, come in here
+				internalFeederState = InternalFeederState.requestedBin;
+				initialUpdateLane();
+				return true;
+			}
+		}
+	}
+	if (internalFeederState == InternalFeederState.requestedBin) {
+		if (binIsHere == true) {
+			binIsHere = false;
+			//if bin is here, then you can go to new state
+			feederState = FeederState.loadBin;
+			internalFeederState = InternalFeederState.receivedBin;
+			return true;
+		}
+	}
+}
+//////Loading bin
+if (feederState == FeederState.loadBin) {
+	if (internalFeederState == InternalFeederState.receivedBin) {
+		internalFeederState = InternalFeederState.waitingToMoveBinDownLane;
+		callToMoveBinDownFeederLane();
+		return true;
+	}
+	if (internalFeederState == InternalFeederState.waitingToMoveBinDownLane) {
+		if (movedBinDownFeederLane == true) {
+			movedBinDownFeederLane = false;
+			internalFeederState = InternalFeederState.checkingDiverterPosition;
+			checkingDiverterPosition();
+			return true;
+		}
+	}
+	if (internalFeederState == InternalFeederState.checkingDiverterPosition) {
+		if (diverterIsInProperPosition == true) {
+			diverterIsInProperPosition = false;
+			feederState = FeederState.unloadPart;
+			internalFeederState = InternalFeederState.checkingNumberOfSpotsOpenInLane;
+			checkNumberOfSpotsOpenInLane();
+			return true;
+		}
+	}
+}
+///////Unload Part
+if (feederState == FeederState.unloadPart) {
+	if (internalFeederState == InternalFeederState.checkingNumberOfSpotsOpenInLane) {
+		if (needToPurgeBin == true) {
+			needToPurgeBin = false;
+			feederState = FeederState.purgeBin;
+			internalFeederState = InternalFeederState.waitingForBinToBePurged;
+			callToPurgeBin();
+			return true;
+		}
+		if (laneHasOpenSpots == true) {
+			laneHasOpenSpots = false;
+			internalFeederState = InternalFeederState.checkIfNeedToChangePartType;
+			synchronized(updatedLanes) {
+				updatePartTypes();
+			}
+			return true;
+		}
+		if (requestNumberOfSpotsInLane == true) {
+			requestNumberOfSpotsInLane = false;
+			internalFeederState = InternalFeederState.messagingRequestForNumberOfSpotsInLane;
+			requestNumberOfSpotsInLane();
+			return true;
+		}
+	}
+	if (internalFeederState == InternalFeederState.checkIfNeedToChangePartType) {
+		if (noNeedToChangePartTypes == true) {
+			noNeedToChangePartTypes = false;
+			internalFeederState = InternalFeederState.waitingForPartToBeMovedIntoLane;
+			callToMovePart();
+			return true;
+		}
+		if (needToPurgeBin == true) {
+			needToPurgeBin = false;
+			feederState = FeederState.purgeBin;
+			internalFeederState = InternalFeederState.waitingForBinToBePurged;
+			callToPurgeBin();
+			return true;
+		}		
+	}
+	if (internalFeederState == InternalFeederState.waitingForPartToBeMovedIntoLane) {
+		if (doneMovingPart == true) {
+			doneMovingPart = false;
+			internalFeederState = InternalFeederState.checkingNumberOfSpotsOpenInLane;
+			checkNumberOfSpotsOpenInLane();
+			return true;
+		}
+	}
+	if (internalFeederState == InternalFeederState.messagingRequestForNumberOfSpotsInLane) {
+		if (needToPurgeBin == true) {
+			needToPurgeBin = false;
+			feederState = FeederState.purgeBin;
+			internalFeederState = InternalFeederState.waitingForBinToBePurged;
+			callToPurgeBin();
+			return true;
+		}
+		
+		if (receivedNumberOfSpotsInLane == true) {
+			//need to update spots and then go back to checkingNumberOfSpotsOpeninLoa
+			receivedNumberOfSpotsInLane = false;
+			internalFeederState = InternalFeederState.checkingNumberOfSpotsOpenInLane;
+			checkNumberOfSpotsOpenInLane();
+			return true;
+		}
+	}
+}
+///////////PURGEBIN
+		if (feederState == FeederState.purgeBin) {
+			if (internalFeederState == InternalFeederState.waitingForBinToBePurged) {
+				if (binHasBeenPurged == true) {
+					binHasBeenPurged = false;
+					if (needToRequestABin == true) {
+						needToRequestABin = false;
+						internalFeederState = InternalFeederState.decideToMessageGantryForReturnBin;
+						requestABinFromGantry();
+						return true;
+					}
+					else {
+						feederState = FeederState.idle;
+						internalFeederState = InternalFeederState.notRequestedABin;
+						tellGantryToPickUpBin();
+						return true;
+					}
+				}
+			}
+			if (internalFeederState == InternalFeederState.decideToMessageGantryForReturnBin) {
+				if (requestedABinFromGantry == true) {
+					requestedABinFromGantry = false;
+					feederState = FeederState.idle;
+					internalFeederState = InternalFeederState.requestedBin;
+					return true;
+				}
+			}
+		}
+//if nothing will work, have to return false
+return false; 
+
+
+
+
+
+Actions
+
+//updates lane types if in initial state
+ void initialUpdateLane() {
+	UpdatedLane topLane = new UpdatedLane(); bottomLane = new UpdatedLane();
+	boolean updateBottom = false; boolean updateTop = false;
+	UpdatedLane updatedLane;
+	//iterates through updated lanes
+	for (updated lanes...)
+		updatedLane = updatedLanes.get(0); //gets first
+		updatedLanes.remove(updatedLane); //and removes it
+		if (updatedLane.position == false) { //top lane agent
+			//then will make the top lane the updated lane (iterated through)
+			topLane = updatedLane;
+			updateTop = true; //set boolean so that we know it needs to be updated
+		}
+		else {
+			bottomLane = updatedLane; //must be bottomlane
+			updateBottom = true;
+		}
+	}
+	//at this point the newest lanes are in the spots bottomLane and updatedLane
+	if (updateTop == true) { //top has been updated
+		//if you need to update the top lane, then set the topPartType and then request that type
+		topPartType = topLane.partTypeOfTheUpdateTopLane;
+		//the following message is only called when in the initial state; when there are no bins present
+		gantryAgent.msgIInitiallyNeedThisPartType(this, topPartType);	
+		//if updateBottom is also true, then add it back into the thing.
+		if (updateBottom == true) {
+			updatedLanes.add(bottomLane);
+			//should return and be done
+			return; //get out of action
+		}
+	}
+	if (updateBottom == true) { //top has been updated
+			//if you need to update the top lane, then set the topPartType and then reuqest that type
+			bottomPartType = bottomLane.partType;
+			gantryAgent.msgIInitiallyNeedThisPartType(this, bottomPartType);	
+		//}
+	}
+}
+	
+//updates lane types if the array of requests to change part types (updatedLanes) is greater than 0;
+ //will then see if bin needs to be purged as a result of updating the part type */
+ //BASICALLY IS THE SAME AS THE ABPVE MESSAGE, BUT THIS WILL UPDATE LOTS OF LANES AND WILL NOT
+ //CALL THE GANTRY AFTER IT CHANGED I NEED THIS PART TYPE
+ void updatePartTypes() {
+
+	UpdatedLane topLane = new UpdatedLane();
+	UpdatedLane bottomLane = new UpdatedLane();
+	boolean updateBottom = false;
+	boolean updateTop = false;
+	UpdatedLane updatedLane;
+	for (all UPDATEDLANES) {
+		updatedLane = new UpdatedLane();
+		updatedLane = updatedLanes.get(0);
+		updatedLanes.remove(updatedLane);
+		if (updatedLane.position == false) { //top lane agent
+			topLane = updatedLane;
+			updateTop = true; //need to change top
+		}
+		else {
+			bottomLane = updatedLane;
+			updateBottom = true;
+		}
+	}
+	if (updateTop || updateBottom) {
+		if (updateTop == true) { //top has been updated
+			if (topPartType == null) { //bin does not have a topPartType
+				topPartType = topLane.partType;
+				noNeedToChangePartTypes = true;
+			}
+			else if (topPartType == bin.type()) {
+				if (topPartType != topLane.partType) {
+					//state that should change scheduler
+					needToPurgeBin = true;
+					iNeedThisPartType = topLane.partType;
+				}
+			}
+			else { //bin is the opposite type
+				topPartType = topLane.partType;
+				noNeedToChangePartTypes = true;
+			}
+		}
+		if (updateBottom == true) { //top has been updated
+			if (bottomPartType == null) { //bin does not have a topPartType
+				bottomPartType = bottomLane.partType;
+				noNeedToChangePartTypes = true;
+			}
+			else if (bottomPartType == bin.type()) {
+				if (needToPurgeBin == false) { //don't want to purge bin twice
+					if (bottomPartType != bottomLane.partType) {
+						//state that should change scheduler
+						needToPurgeBin = true;
+						iNeedThisPartType = bottomLane.partType;
+					}
+				}
+				else {
+					//add request back into the array
+					updatedLanes.add(bottomLane);
+					//boolean that will change state in scheduler
+					noNeedToChangePartTypes = true;
+				}
+			}
+			else { //bin is the opposite type
+				bottomPartType = bottomLane.partType;
+				noNeedToChangePartTypes = true;
+			}
+		}
+	}
+	else {
+		noNeedToChangePartTypes = true;
+	}		
+}
+
+// action that will call the gui and tell the guiFeeder to move the new bin down the lane 
+ void callToMoveBinDownFeederLane() {
+		guiFeeder.doMoveBinDownFeederLane(bin.guibin()); //will send the gui of the bin	
+}
+
+// called by the FeederGui when the bin has successfully been moved to the end of the lane
+public void doneMoveBinDownFeederLane() {
+	movedBinDownFeederLane = true;
+}
+
+//checks to see if the diverter needs to change the direction; if so, calls animation
+ void checkingDiverterPosition() {
+	
+	if ((bin.type() == topPartType) && (diverterDirectionIsUp == false)) {
+		guiDiverter.doMoveDiverterToPosition('u');
+	}
+	else if ((bin.type() == bottomPartType) && (diverterDirectionIsUp == true)) {
+		guiDiverter.doMoveDiverterToPosition('d');
+
+	}
+	else { (if the diverter is already in the right position...)
+		diverterIsInProperPosition = true;
+		stateChanged();
+	}
+}
+
+// called by the diverter when it has changed positions based on the part type that is coming into the diverter/lane 
+public void doneMoveDiverterToPosition() { 
+	if (diverterDirectionIsUp == false ) {
+		diverterDirectionIsUp = true;
+		//boolean that works in scheduler
+		diverterIsInProperPosition = true;
+	}
+	else if ( diverterDirectionIsUp == true ) {
+		diverterDirectionIsUp = false;
+	    //boolean that works in scheduler
+		diverterIsInProperPosition = true;
+	}
+}
+
+// checks to make sure there are enough open spots in the lane to pass a part; also makes
+// sure there are enough spots in the bin that the feeder is unloading, to be able to pass
+// another part to the diverter
+ void checkNumberOfSpotsOpenInLane() {
+	//need to check to make sure that there are enough spots left in bin
+	if (getcurrentBinType() == topPartType) {
+		if (getnumberOfSpotsincurrentbin() == 0) {
+			iNeedThisPartType = bottomPartType;
+			//boolean that will change state in scheduler
+			needToPurgeBin = true;
+		}
+		else if (topLaneSpotsOpen > 0) {
+			//don't need to request More Parts
+			//boolean that will change state in scheduler
+			laneHasOpenSpots = true;
+		}
+		else {
+			//boolean that will change state in scheduler
+			requestNumberOfSpotsInLane = true;
+		}
+	}
+	else { // bottom part type is present 
+		if (getnumberOfSpotsincurrentbin() == 0) {
+			iNeedThisPartType = topPartType;
+			//boolean that will change state in scheduler
+			needToPurgeBin = true;
+			return;
+		}
+		else if (bottomLaneSpotsOpen > 0) {
+			//don't need to requestMoreParts
+			//boolean that will change state in scheduler
+			laneHasOpenSpots = true;
+		}
+		else {
+			//boolean that will change state in scheduler
+			requestNumberOfSpotsInLane = true;
+		}
+	}
+}
+
+// based on the number of spots in the lanes and how many times the number of spots in
+// the lane have been requested, a message will be sent to a lane if need to know the number
+// of spots in the lane that are open or you need to purge the bin, etc. */
+ void requestNumberOfSpotsInLane() {
+	if (getcurrentBinType() == topPartType ) {
+		if (counterOfLaneSpotRequests > counterLimitOfRequests) {
+			//need to purge bin and get different type
+			counterOfLaneSpotRequests = 0;
+			if (bottomPartType == null) {
+				iNeedThisPartType = topPartType;
+			}
+			else {
+				iNeedThisPartType = bottomPartType;
+			}
+			needToPurgeBin = true;
+		}
+		else { 
+			topLaneAgent.msgRequestNumberOfOpenSpots();
+			counterOfLaneSpotRequests++;
+		}
+	}
+	else { //binType = bottom
+		if (counterOfLaneSpotRequests > counterLimitOfRequests) {
+			//need to purge bin and get different type
+			counterOfLaneSpotRequests = 0;
+			if (bottomPartType == null) {
+				iNeedThisPartType = bottomPartType;
+			}
+			else {
+				iNeedThisPartType = topPartType;
+			}
+			needToPurgeBin = true;
+		}
+		else { 
+			bottomLaneAgent.msgRequestNumberOfOpenSpots();
+			counterOfLaneSpotRequests++;
+		}
+	}
+	
+}
+
+///// will get the next part in the bin and will send it to the diverter to send it down the lane
+ void callToMovePart() {
+	//at this point we know there are spots left in the lane to unload parts so we may unload 1 part
+	agentPart = getPartInTheCurrentBin();
+	guiDiverter.doUnloadPartIntoLane(agentPart.partgui); //sends a GuiPart
+	if (getCurrentBinType() == topPartType) {
+		topLaneSpotsOpen--;
+	}
+	else {
+		bottomLaneSpotsOpen--;
+	}
+}
+
+// called by the gui when the part is done being moved into the new lane; also sends a message to
+// the lane agent with the part type that was moved into the lane
+public void doneUnloadPartIntoLane() { 
+	if (diverterDirectionIsUp == true) { //top lane
+		//base where the part should go by the direction of the diverter
+		topLaneAgent.msgPartForLane(agentPart);
+	}
+	else { // diverterDirectionIsUp == false; //bottom lane
+		bottomLaneAgent.msgPartForLane(agentPart);
+	}
+	doneMovingPart = true;
+	stateChanged();
+}
+
+// will call the gui animation to return the bin to the front of the feeder
+ void callToPurgeBin () {
+		guiFeeder.doPurgeBin();
+}
+
+	// will be called by the guiFeeder, telling the feeder that it done purging bin and moving bin
+	 // back into starting position to be picked up; will request a new bin */
+	public void donePurgeBin () {
+		if (diverterDirectionIsUp == true) {
+			topPartType = null;
+		}
+		else {
+			bottomPartType = null;
+		}
+		topLaneSpotsOpen = 0;
+		bottomLaneSpotsOpen = 0;
+		counterOfLaneSpotRequests = 0;
+		binHasBeenPurged = true;
+		stateChanged();
+	}
+	
+	//requests a bin from the gantry
+	private void requestABinFromGantry() {
+		gantryAgent.msgReturnAndRequestBin(this, bin, iNeedThisPartType);
+		requestedABinFromGantry = true;
+	}
+	
+	//gantry will be messaged to pick up the bin	
+	private void tellGantryToPickUpBin() {
+		gantryAgent.msgReturnBin(this, bin);
+	}
+	
+	//this method will simply wait for a random amount of time
+	public void randomWait() {
+		wait(getRandomAmountOfTime());
+	}
+

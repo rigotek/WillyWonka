@@ -1,0 +1,163 @@
+/**
+ * @author Jungho Lee
+ * Here we have a ripple on the ocean.
+ * The ripple will take candy, bin, or whatever
+ * implements holdable.
+ */
+
+package gui;
+
+import java.awt.Graphics;
+import java.util.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+
+import gui.holdable.Holdable;
+import gui.interfaces.Gui;
+import gui.interfaces.GuiCandyXYInterface;
+import gui.locationsimg.Images;
+
+public class GuiOcean implements Gui {
+
+
+	private LinkedList<Holdable> candyQueue;
+	private LinkedList<GuiCandyXYInterface> candyXYQueue;
+	
+	private int currX;
+
+	private int currY;
+
+	private int currAngle;
+
+	private int centerX;
+
+	private int centerY;
+	
+	private boolean showUp;
+
+public GuiOcean (int x, int y) {
+
+	currX = x;
+	currY = y;
+	centerX = x + Images.Ripple.getIconWidth()/2;
+	centerY = y + Images.Ripple.getIconHeight()/2;	
+	showUp = false;
+	candyQueue = new LinkedList<Holdable>();
+	candyXYQueue = new LinkedList<GuiCandyXYInterface>();
+}
+
+
+public void draw(Graphics g) {
+// rotate ripple image
+	tx.rotate(Math.toRadians(currAngle), Images.Ripple.getIconWidth()/2, Images.Ripple.getIconHeight()/2);
+
+// check appearance of holdable items 
+	if(showUp)
+	{	// Draw all parts on the ripple
+		g2d.drawImage(Images.Ripple.getImage(), tx, null);
+		for (int i = 0; i < candyQueue.size(); i++) 
+		{
+		
+			g2d.drawImage(candyQueue.get(i).image.getImage(), candyQueue.get(i).getCurrentX(), candyQueue.get(i).getCurrentY(),null);
+		}
+	}
+
+	
+}
+
+public void updateLocation() {
+	ripple angle update
+	move holdable items
+	set location of each holdable items
+}
+
+public int getCurrentX(){
+  return currX;
+}
+	 
+public int getCurrentY(){
+  return currY;
+}
+	  
+public int getDestinationX(){
+  return currX;
+}
+	  
+public int getDestinationY(){
+  return currY;
+}
+
+//take holdable items, and gives an initial position
+public void DoMoveToRipple(Holdable p) 
+{
+	add holdable item into the item queue
+	give initial position
+}
+
+// advance holdable items
+public void AdvanceCandies() {
+	for (all items) {
+	advance candy angle;
+	advance candy radius;
+	
+	if (item arrived to the center of ripple) {
+		delete item;
+	}
+	}
+}
+
+public void partCallback(Gui part) {
+	// TODO Auto-generated method stub
+	
+}
+
+
+public void setDestination(int x, int y) {
+	// TODO Auto-generated method stub
+	
+}
+
+
+@Override
+public void enable() {
+	// TODO Auto-generated method stub
+	
+}
+
+
+@Override
+public void disable() {
+	// TODO Auto-generated method stub
+	
+}
+
+
+@Override
+public Power checkPower() {
+	// TODO Auto-generated method stub
+	return Power.ON;
+}
+
+
+@Override
+public void destroy() {
+	// TODO Auto-generated method stub
+	
+}
+
+
+@Override
+public void repair() {
+	// TODO Auto-generated method stub
+	
+}
+
+
+@Override
+public boolean checkRepair() {
+	// TODO Auto-generated method stub
+	return false;
+}
+
+
+}

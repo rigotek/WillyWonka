@@ -1,0 +1,270 @@
+Gantry Agent - Ross Mowrey
+
+This will be in charge of moving bins from the "inventory" or boats to the feeder.
+API---------------------------------
+GUIGANTRY:
+DoRetrieveBin - calls the gantry and has it pick up a bin
+DoGoToIdle - goes to the idle position after it's picked up/dropped something off
+DoLoadBin - will call the gui gantry to pick up the bin and will move it to the feeder
+DoReturnEmptyBin - this will pick up a bin from the feeder and return it to the boat
+
+GUIBOAT:
+doBringBinToGantry - this will bring the boat with a new bin to the gantry
+doBringEmptyBoatToGantry - will bring out an empty boat so that a boat will pick up a bin
+doReceiveBinFromGantry - will tell the boat to take away a bin and boat from the screen
+	
+**********************************DATA************************************************
+	
+	String name - names the gantry
+	GuiGantryRobot guigantry - reference of the gantry
+	GuiBoat boat - guiboat that takes bins
+	ArrayList<myBin> bins - list of specific type of bin that has the feeder, partType, etc.
+	myBin tmpbin - current bin, temporary bin
+	GuiBin tmpguibin - current GuiBin that is being dealt with	
+	boolean atTurningPoint - boolean that will be a turning point.. st. the states change in the scheduler
+	boolean done - boolean that will be a true/false turning point that will help out in the scheduler
+	ArrayList<Gui> guilist - list of gui bins
+
+	//states of the bins that have to do with the methods that need to be called to deal with the bins
+	enum myBinState { ReturnAndRequest, ReturnBin, RequestBin, None }
+	
+
+	myBinState gantryState -state that deals with the gantry... dealt with in the scheduler 
+	
+	enum STATE {NO_ACTION,C_BIN, R_BIN, W_BIN} - states that have to do with the scheduler
+	STATE state - specific state of the gantry agent
+	
+	public class myBin{ - specific class that deals with bins and their location in the factory
+		myBinState binState - has to do with 
+		AgentBin bin;
+		Feeder feeder;
+		PartType part;
+		boolean binfilled, binloaded, haveBin;
+				
+		public myBin(Feeder f, PartType p, AgentBin b){ - constructor for the bin
+			bin = b;
+			feeder = f;
+			part = p;
+			binfilled = false;
+			binloaded = false;
+			haveBin = false;
+		}
+	
+		public myBin(Feeder f, PartType p, AgentBin b, boolean t){ - another constructor for the bin
+			bin = b;
+			feeder = f;
+			part = p;
+			binfilled = false;
+			binloaded = false;
+			haveBin = t;
+		}
+	
+		public myBin(Feeder f, PartType p, AgentBin b, myBinState t){ - another constructor for the bin that does not set any
+											binfilled or binloaded variables
+			bin = b;
+			feeder = f;
+			part = p;
+			binState = t;
+		}
+	
+		public myBin(myBin mb){ - a fourth constructor that has most of the boolean variables already declared
+			this.bin = mb.bin;
+			this.feeder = mb.feeder;
+			this.part = mb.part;
+			this.binfilled = mb.binfilled;
+			this.binloaded = mb.binloaded;
+			this.haveBin = mb.haveBin;
+			this.binState = mb.binState;
+		}
+	
+	
+	}
+	
+	// constructor for the gantry agent... will set the name, set current state, and will create the bin list
+	public GantryAgent(String n){
+		name = new String(n);
+		bins = new ArrayList<myBin>();
+		state = state.NO_ACTION;
+	}
+	
+	
+***************************MESSAGES*********************************************
+
+	//message that will be sent by the feeder... this will tell the gantry to get a new bin of the certain
+		part type and bring it to the feeder that was sent in by a parameter
+	public void msgINeedThisPartType(Feeder f, PartType parttype){
+		print("Gantry has received request to create a bin of type " +
+				parttype.toString());
+		bins.add(new myBin(f,parttype,new AgentBin(),myBinState.RequestBin));
+		print("size of the new bins: " + bins.size() );
+		stateChanged();
+		//should work as before by getting a bin from nowhere
+	}
+	
+	//message that will be sent to the gantry from the feeder that will tell the gantry to pick up a bin from the 
+		specific feeder and will get a new bin of the specific part type to the feeder
+	public void msgReturnAndRequestBin(Feeder f, AgentBin b, PartType pt){
+		print("Received request of bin from " + f.toString());
+		bins.add(new myBin(f,pt,b, myBinState.ReturnAndRequest));
+		print("updated bin");
+		print("size of the new bins: " + bins.size() );
+		stateChanged();
+		//should bring a bin back and should get a new bin and return to feeder
+	}
+	
+	//will only pick up a bin from the feeder specifically
+	public void msgReturnBin(Feeder f, AgentBin b) {
+		print("Received message to pick up a bin from " + f.toString() +
+			"and NOT send a new bin.");
+		bins.add(new myBin(f, null, b, myBinState.ReturnBin));
+		stateChanged();
+		//at this point, want to get the boat to pick up the bin and leave.  that's it.
+	}
+	
+	
+
+	
+
+**************************SCHEDULER**************************************************
+		
+		//at turning point when a task is done... may need to refill bin
+		if (atTurningPoint == true) {
+			atTurningPoint = false;
+			if (tmpbin.binState == myBinState.ReturnBin) {
+				gantryState = myBinState.None;
+				return true;
+			}
+			else if ((tmpbin.binState == myBinState.RequestBin) || (tmpbin.binState == myBinState.ReturnAndRequest)) {
+				refillBin(tmpbin);
+				return true;
+			}
+		}
+		
+		//changing state at this point when a task is done
+		if (done == true) {
+			done = false;
+			gantryState = myBinState.None;
+			return true;
+		}
+		
+		// if there is nothing going on in the gantry, it is in state "None",
+		// then you will go process a bin
+		if (gantryState == myBinState.None) {
+			for (myBin mb:bins) {
+				tmpbin = new myBin(mb);
+				bins.remove(mb);
+				if (mb.binState == myBinState.RequestBin) {
+					gantryState = myBinState.RequestBin;
+					//need to get a new bin
+					createBin(mb);
+					return true;
+				}
+				else if (mb.binState == myBinState.ReturnAndRequest) {
+					gantryState = myBinState.ReturnAndRequest;
+					pickUpBin(mb);
+					return true;
+				}	
+				else if (mb.binState == myBinState.ReturnBin) {
+					gantryState = myBinState.ReturnBin;
+					pickUpBin(mb);
+					return true;
+				}
+			}
+		}
+		
+		return false;		
+	}
+
+
+************************ACTIONS**********************************
+	
+	//create a bin and bring the boart out to be dealt with
+	public boolean createBin(myBin mb){
+		mb.bin = new AgentBin();
+		boat.doBringBinToGantry();
+		tmpbin = mb;
+		return true;
+	}
+	
+	//will refill the bin by adding parts to the bin, and will change the temp bin to the current bin
+	public void refillBin(myBin mb){
+		print("Gantry is refilling a bin.");
+		guigantry.DoRetrieveBin(mb.bin.guibin(), boat);
+		mb.bin.refillParts(mb.part, 20);
+		mb.binfilled = true;
+		tmpbin = new myBin(mb);
+	}
+
+	//will call then gui gantry to load the bin 
+	public void loadBin(Feeder f){
+		//loads Bin in Feeder
+		guigantry.DoLoadBin(((FeederAgent) f).getFeederGui());
+		state = state.W_BIN;
+		stateChanged();
+	}
+	
+	//setter for the guiGantryRobot
+	public void setGuiGantryRobot(GuiGantryRobot ggr){
+		guigantry = ggr;
+	}
+	
+	//setter for the guiList
+	public void setGuiList(ArrayList<Gui> guiList) {
+		this.guilist = guiList;
+	}
+	
+	//setter for the boat
+	public void setGuiBoat(GuiBoat gb){
+		boat = gb;
+	}
+	
+	//method that will return the name of the agent
+	public String toString(){
+		return name;
+	}
+	
+	// animation call to the gantry robot to fill up the bin
+	public void DoneRefillingBin(){
+		print("The GuiGantry has finished refilling the bin.");
+		loadBin(tmpbin.feeder);		
+	}
+	
+	//done loading the bin into the feeder
+	public void DoneLoadingBin(){
+		tmpbin.feeder.msgHereIsBin(tmpbin.bin);
+		state = state.NO_ACTION;
+		done = true;
+		guigantry.DoGoToIdle();
+		stateChanged();
+	}
+	
+	//this will go pick up a bin from the feeder and take it to the boat
+	public void RefillBoat(){
+		if ((tmpbin.binState == myBinState.RequestBin) || (tmpbin.binState == myBinState.ReturnAndRequest)) {
+			boat.doBringBinToGantry();
+		}
+		else {
+			done = true;
+		}
+	}
+	
+	//picks up the bin from the boat
+	public void pickUpBin(myBin mb) {
+		boat.doBringEmptyBoatToGantry();
+		guigantry.DoReturnEmptyBin(mb.bin.guibin(), ((FeederAgent) mb.feeder).getFeederGui());
+	}
+	
+	//called by the gantry gui that will say when it is done purging the bin
+	public void DonePurgingBin() { //will be called by the gantry gui
+		boat.doReceiveBinFromGantry(tmpbin.bin.guibin());
+		guigantry.DoGoToIdle();
+		state = state.NO_ACTION;
+		stateChanged();
+	}
+
+	// state changing method that is also a return animation method from the gui
+	public void DoneMovingToUnload(GuiBin gb){
+		tmpbin.bin.setGuiBin(gb);
+		atTurningPoint = true;
+		stateChanged();
+	}

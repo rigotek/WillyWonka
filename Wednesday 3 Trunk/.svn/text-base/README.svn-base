@@ -1,0 +1,71 @@
+Kitting Cell - V2
+
+**WE MADE A SMALL REVISION, ONE COMMENTED OUT LINE MAKES OUR ENTIRE FACTORY WORK PERFECT**
+
+This is the complete V2 Kitting Cell Factory for CS200/201 team WEDNESDAY 3.
+
+Our factory is a Willy Wonka candy-themed factory that creates kits of candy.
+We have made several design choices for our factory which is detailed here
+
+RUN
+	In order to run the factory, please go to gui/ux/MainInterface.java and build and run that file.
+	Be sure to click the start button and that will open the gates to the factory. Also, you cannot 
+	create a kit until the factory is running completely so make sure to click start before anything.
+	
+INTERFACE
+	All kits consist of anywhere from 4-8 parts. The default is that all of the parts in the kit are of type1 (Wonka Bars)
+	and the entire factory will work to fill that kit with 8 wonka bars. To change the configuration of
+	the kit, go to the combo box and click the part type you want to add to the current configuration and 
+	then click on one of the 8 buttons with pictures of the current candy in the kit to switch that new candy
+	into the kit. So, if I wanted to make 7 part1, and 1 part2 I would go to the combo box and select part2.
+	Then I would click on any one of the images of part1. Then I would type 1 in the text box and click create
+	to make one kit of that configuration. If you want less than 8 parts in a kit, scroll up to the top of the
+	combo box, and click the remove option. Then, click on the number of kits you would like to remove. Then hit start.
+	
+AGENT INTERACTION
+	We tried to mimic real life with the way our factory works so the flow is as follows. First a kit is created
+	and that is sent on to the kit stand and then the kit stand tells the parts robot of that change. The parts
+	robot who is told by the lane cameras which part types are in which nests will allocate the nests to switch
+	their part type in order to correctly distribute the needed part types across the factory. This ensures that
+	the gantry is always brining in the correct part type without wasting resources too much. Furthermore, the 
+	gantry is a state machine so it won't start loading the second lane with a new type until the current bin has 
+	finished dumping its parts into the feeder.
+	
+Basic Tests we have run that work:
+All of 1 part type...............................................WORKS
+7 of 1 part type, 1 of another part type.........................WORKS
+6 of 1 part type, 2 of another part type.........................WORKS
+5 of 1 part type, 3 of another part type.........................WORKS
+4 of 1 part type, 4 of another part type.........................WORKS
+...so on and so forth
+
+Making multiple of the same configuration by entering 2 or more in the text box.
+
+Please note that the kit camera is just a flash and it goes off quickly so it is easy to miss. Also, both of the 
+cameras are on timers so even though it may look like its not doing anything, it really is just waiting for the 
+timer to go off. 
+
+**Please note that it takes a while to get all of the part types on the factory. I mean A REALLY LONG TIME. BE PATIENT**
+
+NON NORMATIVES
+	To activate the non-normatives, click on the non-normatives tab of the control panel. 
+	
+	nom nom chocolate
+		Draining the ocean has the effect of stopping the factory since all of the robots operated on chocolate.
+		Clicking the button again will get Charlie to refill the factory with chocolate and everything will
+		go back to working fine.
+		
+	choco nami
+		The large wave of chocolate comes on the screen and resets everything. All of the candy, etc. comes off 
+		and the whole factory starts afresh. Clicking the fix, resets the entire factory.
+		
+	bubble
+		All of the candies currently on a lane will get caught in a bubble from the fizzy drink. The candy will then
+		float around on screen until it eventually gets up so high that is off the screen completely and gone forever.
+		
+	utlimate rebellion
+		The oompa loompahs are going on strike and they have their own song that they revolt too. The oompa loompahs
+		will dance around on screen randomly until you click the button again and charlie settles them down again.
+
+Thank You. 
+WEDNESDAY 3

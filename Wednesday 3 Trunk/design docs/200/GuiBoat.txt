@@ -1,0 +1,221 @@
+//==========================================================
+//Rodrigo Santos
+//Oct 26, 2011
+//==========================================================
+
+public class GuiBoat implements Gui{
+	int currX;
+	int currY;
+	int destX;
+	int destY;
+	boolean HasArrived;
+	
+	Holdable holds; 
+	
+	void draw(){
+		//updates the drawing with the boat’s current location
+	}
+
+	void updateLocation(){
+		//updates the x and y coordinates of the boat
+	}
+
+	public void partsCallback(){
+		//do nothing;
+	}
+		
+    public int getCurrentX(){
+		return currX;
+		//gets current x coordinate
+	}
+		
+	public int getCurrentY(){
+		return currY;
+		//gets current y coordinate
+	}
+	
+	 public void setCurrentX(int cx){
+		cx = currX;
+		//sets current x coordinate
+	}
+		
+	public void setCurrentY(int cy){
+		cy = currY;
+		//sets current y coordinate
+	}
+		
+	public int getDestinationX(){
+		return destX();
+		//gets destination of x coordinate
+	}
+		
+	public int getDestinationY(){
+		return destY();
+		//gets destination of y coordinate
+	}
+	
+	void FactoryNeedsPart(Object ob){
+		//gantry robot tells boat what to bring next
+	}
+
+	void BinDetection(){
+		//Checks if bin is on the boat or not
+	}
+
+	void boolean ArrivedAtDestination(){
+		if(currX == destX && currY == destY){
+			HasArrived = true;
+		}
+		//if current coordinates are the same as of the destination coordinates
+		//then it returns true so the boat can stop
+	}
+
+	void Unload(Object ob){
+		//tells robot it is ready for unload
+		if (HasArrived == true){
+			//gantry robot pics up the bin
+		}
+		BoatEmpty();
+	}
+	
+	void Load(){
+		//when bin is given back to the gantry robot, it places it back
+		//into the boat
+		BoatFull();
+	}	
+
+	void BoatEmpty(){
+		//a boolean statement to make sure the program knows when the cargo 
+		//is off the boat so it can wait for the bin to be placed back into it
+		Stay();
+	}
+
+	void BoatFull(){
+		//a boolean statement to make sure the program knows when the cargo
+		//is on the boat so it can sail off screen
+		Move();
+	}
+
+	//Boolean that Makes Boat Visible/Invisible as It Arrives/Leaves the Screen
+	void IsVisible(){
+		//boolean that is set to true once it appears on the screen, then false
+		//as it leaves
+	}
+
+	void Move(){
+		//once it receives a message from object, boat sails to unload, then sails 
+		//across the screen until it reloads with the finished product
+	}
+	
+	void Stay(){
+		//boat stays in place until the bin is placed back into it
+	}
+}
+
+V1/v2/Final
+
+/**
+ * @author Tyler Gregg
+ * The GuiBoat is the visual representation of the
+ * GuiBin delivery system.  The GuiBoat starts
+ * off screen with a full GuiBin, waiting for the
+ * GantryAgent to tell it to move to a position
+ * on screen to unload the bin.  The GuiBoat then
+ * waits for the GantryRobot to give it an empty
+ * bin, after which it moves downward off screen.
+ */
+
+==============================================
+GuiBoat implements Gui
+==============================================
+private GuiBin bin = null;
+private int currX, currY, destX, destY;
+private boolean hasBin, isOn;
+private ImageIcon image;
+private GantryAgent agent = null;
+private final int speed = 5;
+public State presentState;
+==============================================
+
+//it has the states needed ti give boat direction, such as ready, move to gantry,
+//move down and unload
+public enum State
+
+//constructor which builds the image of the boat, gets the present state of boat to
+//ready, makes sure no bin is on top of it, it turns itself on (for power issues), and
+// locations are taken from the locations file
+public GuiBoat(){
+
+//initializes the agent for the boat
+public void setAgent(GantryAgent newagent)
+
+//the draw method creates a temp image of the boat and makes it move by using the update location
+//method
+public void draw(Graphics g) {
+
+//the remove method makes the bin to null, the boolean statement declares it to false and there is 
+//a message sent to state changed that allows the program to know the boat is ready to move on
+public void removeBin(){
+
+//Method that dictates the location the boat goes; whether it goes to the gantry, unloads the bin,
+//picks up bin, or goes away
+public void updateLocation() {
+
+//method that has a couple of cases that allows the state of the boat to change from going to gantry
+//to moving down and unload
+private void stateChanged(){
+
+//method that allows bin to move to the feeder by the means of the gantry robot. State gets changed
+//and the bin becomes true
+public void doBringBinToGantry(){
+
+//another state change method that allows the boat to go to gantry so it can get the bin loaded/unloaded
+public void doBringEmptyBoatToGantry(){
+
+//this is when the gantry puts the bin back into the boat. State is changed
+public void doReceiveBinFromGantry(GuiBin newbin){
+
+//this is the wave method, which makes the bin disappear when the wave covers the screen
+public void wave(){
+
+//this is the method that allows for the parts to be turned on/off if it's selected
+public void flipOnOffState(){ //name will need to be changed to conform with non-norm api
+
+//this method checks to see if boat has the bin 
+public boolean getHasBin(){
+
+//the most important part which actually calls back the bin into the boat
+public void partCallback(Gui part) {
+
+//gets currentX
+public int getCurrentX() {
+
+//gets currentY
+public int getCurrentY() {
+
+//gets the DestinationX
+public int getDestinationX() {
+
+//gets destinationY
+public int getDestinationY() {
+
+//sets the destinations
+public void setDestination(int x, int y) {
+
+//checks the power to see if they have been turned on/off
+public Power checkPower() {
+
+//auto generated to see if it needs repair
+public boolean checkRepair() {
+
+//auto generatedby superclass
+public void destroy() {
+
+//auto generatedby superclass
+public void disable() {
+
+//auto generated by superclass
+public void enable() {
+
+//auto generated by superclass
+public void repair() {

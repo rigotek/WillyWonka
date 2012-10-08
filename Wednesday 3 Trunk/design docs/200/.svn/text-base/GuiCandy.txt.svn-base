@@ -1,0 +1,61 @@
+// Jungho Lee
+
+package gui.holdable;
+
+import gui.interfaces.Gui;
+import gui.locationsimg.Images;
+
+import java.awt.Graphics;
+
+import structures.AgentPart;
+import structures.PartType;
+
+public class GuiCandy extends Holdable implements Gui {
+
+	PartType partType;
+	public AgentPart agent;
+
+	public GuiCandy(int x, int y, PartType type) {
+		super(x, y);
+		this.partType = type;
+
+		if (partType.ordinal() == 0) {
+			image = Images.CandyA;}
+		else if (partType.ordinal() == 1) {
+			image = Images.CandyB;}
+			
+		// using enum to give proper image
+	}
+
+	/**
+	 * Sets the agent part
+	 * @param ap
+	 */
+	public void setAgentPart(AgentPart ap) {
+		agent = ap;
+	}
+
+	public GuiCandy(int x, int y, Gui o, PartType type) {
+		super(x, y, o);
+
+		if (type.ordinal() == 0) {
+			image = Images.CandyA;}
+		else if (type.ordinal() == 1) {
+			image = Images.CandyB;}
+	}
+	
+		// using enum to give proper image
+
+
+	@Override
+	public void draw(Graphics g) {
+		if(image != null){
+			
+			super.draw(g);
+			
+
+		}
+		else 
+			System.out.println("image is null");
+	}
+}	

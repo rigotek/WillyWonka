@@ -1,0 +1,215 @@
+
+//=======================TylerGregg=========================
+
+public class GuiFeeder extends GuiBelt{
+    private FeederAgent agent = null;
+    private GuiBin bin = null;
+    private boolean hasBin;
+	protected enum State {
+       	READY,
+       	MV_BIN,
+       	PRG_BIN,
+       	RETURN,
+		UNLOAD
+	};
+    State presentState;
+    
+    public GuiFeederBelt(FeederAgent agent){
+    	this.agent = agent;
+    	presentState = READY;
+    }
+    
+	public void draw(Graphics g){
+		if(hasBin){
+			//draw both the bin and the feeder
+		}
+		else{
+			//draw only the feeder
+		}
+	}
+	
+    public void updateLocation(){
+    	//compare x with xDest and y with yDest,
+        //updating x and y accordingly
+        
+        super.updateLocation();
+        
+        if(presentState == MV_BIN && x == xDest && y == yDest){
+        	agent.doneMoveBinDownFeederLane();
+        	presentState = UNLOAD;
+        	stateChanged();    
+        }
+        else if(presentState == PRG_BIN && x == xDest && y == yDest){
+        	agent.donePurgeBin();
+			bin = null;
+			hasBin = false;
+        	presentState = READY;
+			stateChanged();
+        }
+        if(!hasBin && x == xDest && y == yDest){
+        	presentState = READY;
+        }
+    }
+     
+    public void stateChanged(){
+     	//check the 'state' variable and update
+     	//xDest and yDest accordingly
+     	switch(presentState){
+     		case MV_BIN:
+     			//set xDest and yDest to end of belt
+     		break;
+     		case PRG_BIN:
+     			//set xDest and yDest to start of belt
+     		break;
+     		case RETURN:
+     			//set xDest and yDest to start of belt
+     		break;
+			case UNLOAD:
+				//wait at the end of the belt
+			break;
+     	}
+    }
+     
+    public void doMoveBinDownFeederLane(GuiBin newbin) {
+     	bin = newbin;
+     	hasBin = true;
+     	//Move one bin to the end of the belt
+     	presentState = MV_BIN;
+     	stateChanged();
+    }
+     
+     public void doPurgeBin(){
+     	//return the bin to the robot
+     	presentState = PRG_BIN;
+     	stateChanged();
+    }
+
+	public boolean beltHasBin(){
+		return hasBin;
+	}
+}
+
+//==========================================================
+//v1/v2
+/**
+ * @author Tyler Gregg
+ * The GuiFeeder waits for the FeederAgent to give
+ * it a GuiBin from the GantryRobot, and moves the
+ * bin to the end of the feeder, where its GuiCandy
+ * can be unloaded onto the GuiDiverter.
+ */
+package gui;
+
+public class GuiFeeder extends GuiBelt implements GuiFeederInterface {
+    private FeederAgent agent = null;
+    private int width;
+    private int height;
+    private GuiBin bin = null;
+    private boolean hasBin, binAtEnd, isOn;
+    private int xStart, yStart, xEnd, yEnd;
+    private ImageIcon image, red, green, idle;
+	public enum State { 
+       	READY,
+       	MV_BIN,
+       	PRG_BIN,
+       	RETURN,
+		UNLOAD
+	};
+    public State presentState; 
+    
+    public GuiFeeder(int xVal, int yVal){
+		//initialize images and flags
+    }
+    
+    public void setAgent(FeederAgent newagent){
+    	agent = newagent;
+    }
+    
+	public void draw(Graphics g){
+		//draw the correct images based on the state of
+		//the feeder (if it has bin/ does not have bin/
+		//or is Power.OFF
+	}
+	
+    public void updateLocation(){
+    	//compare x with xDest and y with yDest,
+        //updating x and y accordingly
+		//Also compare state to corresponding X
+		//and Y destinations to call appropriate
+		//agent Done methods
+    }
+     
+    public void stateChanged(){
+     	//check the 'state' variable and update
+     	//xDest and yDest of the bin accordingly	
+    }
+     
+    public void doMoveBinDownFeederLane(GuiBin newbin) {
+    	//Called by the FeederAgent
+    	//Set the new bin given by the feeder to bin
+		//Call stateChanged
+    }
+     
+     public void doPurgeBin(){
+     	//return the bin to the robot
+    	//called by the FeederAgent
+		//call stateChanged
+    }
+     
+    public void removeBin(){
+		//set bin to null, hasBin to false
+    }
+
+	public boolean beltHasBin(){
+		return hasBin;
+	}
+
+	public void partCallback(Gui part) {
+		// Do nothing
+		
+	}
+
+	public void setDestination(int xNew, int yNew) {
+		destX = xNew;
+		destY = yNew;
+	}
+	
+	public void doFlipOnOffState(boolean onOff){
+		//toggle onOff
+	}
+
+	@Override
+	public Power checkPower() {
+		//return Power status (Power.ON if isOn,
+		//Power.OFF if !isOn)
+	}
+
+	@Override
+	public boolean checkRepair() {
+		return false;
+	}
+
+	@Override
+	public void destroy() {
+		//disable the Feeder
+		
+	}
+
+	@Override
+	public void disable() {
+		//disable both the Feeder and its Bin
+	}
+
+	@Override
+	public void enable() {
+		//enable both the Feeder and its Bin
+	}
+
+	@Override
+	public void repair() {
+		//enable the Feeder
+		
+	}
+}
+
+//==========================================================

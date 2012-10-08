@@ -1,0 +1,64 @@
+
+ * @author Jonathan Chu
+
+public class Background 
+{
+	int x1;
+	int x2;
+	int count;
+	int opacityCount;
+	boolean doneDraining;
+	boolean doneFilling;
+
+	private enum backgroundState{NORMAL, DRAINING, DRAINED, FILLING, FILLED};
+	backgroundState myState;
+	public Background()
+	{
+		Initialize the background values
+	}
+	
+	public void draw(Graphics g)
+	{
+		Draw the dry background to be covered up
+		
+		switch(myState)
+		{
+			Depending on the state of the background will use if/esle to draw certain background 
+			Depending on the count will change the opacity
+		}
+	}
+	
+	public void updateLocation()
+	{
+		Increment the X values
+		Reset teh images values if they are on the edge of the background
+		
+		switch(myState)
+		{
+			Change values depending ion the state
+		};
+	}
+	
+	public void drainOcean()
+	{
+		myState = backgroundState.DRAINING;
+	}
+	
+	public void fillOcean()
+	{
+		myState = backgroundState.FILLING;
+	}
+	public void reset()
+	{
+		Set back to the initial values
+	}
+	
+	public boolean getDoneDraining()
+	{
+		return doneDraining;
+	}
+	public boolean getDoneFilling()
+	{
+		return doneFilling;
+	}
+}

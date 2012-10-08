@@ -1,0 +1,18 @@
+//GUI INTERFACE
+//==========================================================
+interface Gui{
+	//int currX;
+	//int currY;
+	//int destX;
+	//int destY;
+	
+	void draw(Graphics g);
+	void updateLocation();
+	void partCallback(GuiPart part);
+	
+	int getCurrentX();
+	int getCurrentY();
+	int getDestinationX();
+	int getDestinationY();
+}
+//==========================================================

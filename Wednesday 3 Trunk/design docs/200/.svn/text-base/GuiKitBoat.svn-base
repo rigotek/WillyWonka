@@ -1,0 +1,44 @@
+===================================================
+GuiKitBoat implements Gui {
+===================================================
+private Power Power;
+private GuiKit kit = null;
+private int currX, currY, destX, destY;
+private boolean hasKit;
+private boolean moved;
+private KitRobotAgent agent = null;
+private final int speed = 5;
+===================================================
+//constructor that initializes all the main variables
+public GuiKitBoat(){
+
+//agent method that initializes the agent
+public void setAgent(KitRobotAgent newagent){
+
+//draw method that draws the image of the boat and the kit
+public void draw(Graphics g) {
+
+//update location method that moves kit accordingly
+public void updateLocation() {
+
+//msgdoGetKit method that actually gets the kit
+public void msgDoGetKit(){
+
+//method that receives kit 
+public void msgDoReceiveKit(GuiKit newkit){
+
+//getters and setters	
+//as well as unimplemented methods	
+public void partCallback(Gui part) {
+public int getCurrentX() {
+public int getCurrentY() {
+public int getDestinationX() {
+public int getDestinationY() {
+public void setDestination(int x, int y) {
+public boolean hasKit() {
+public void enable() {
+public void disable() {
+public Power checkPower() {
+public void destroy() {
+public void repair() {
+public boolean checkRepair() {

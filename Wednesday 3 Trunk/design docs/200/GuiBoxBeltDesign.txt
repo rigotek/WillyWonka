@@ -1,0 +1,347 @@
+Author: Jonathan Chu
+------------------------------V0-----------------------------------------
+public class GuiBoxBelt implements Gui{
+
+            int currX;
+
+            int currY;
+
+ 
+
+    private KitRobot myAgent = null;
+
+    private GuiKit newKit;
+
+    private boolean createBox;
+
+ 
+
+    public BoxBeltGui(KitRobot agent, int locX, int locY){
+
+                        this.myAgent = agent;
+
+                        createBox = false;
+
+                        currX = locX;
+
+                        currY = locY;
+
+    }
+
+ 
+
+     public void draw(Graphics2D g){
+
+                        if(createBox){
+
+                                    //Tell NEw Kit to Draw Self
+                                    
+                                    newKit = new GuiKit(currX, currY);
+                                    
+									createdKit.setGui(newKit);
+									
+									createBox = false;
+									 
+                                    agent.msgAnimationDone();
+
+                         }          
+
+    }
+
+ 
+
+    public void updateLocation(){
+
+        //does nothing
+
+    }
+
+ 
+
+            public void partsCallback(){
+
+                        //Tells lane that part has moved to specific location. Starts lining up part in lane.
+
+            }
+
+ 
+
+    public int getCurrentX(){
+
+                        return currX;
+
+            }
+
+ 
+
+            public int getCurrentY(){
+
+                        return currY;
+
+            }
+
+ 
+
+            public int getDestinationX(){
+
+                        return currX();
+
+            }
+
+ 
+
+            public int getDestinationY(){
+
+                        return currY();
+
+            }
+
+ 
+
+    public void doCreateAKit(AgentKit createdKit){
+
+                        createBox = true;
+
+                        
+                        
+                       
+
+    }
+
+}
+
+--------------------------------V1/V2---------------------------------------------
+public class GuiBoxBelt implements GuiBoxBeltInterface, Gui 
+{
+	private KitRobot myAgent;
+	private GuiKit newKit;
+	private AgentKit newKitAgent;
+	static boolean takenAway;
+	
+	private static int WIDTH;
+	private static int HEIGHT;
+	
+	private static int COVERWIDTH;
+	private static int COVERHEIGHT;
+	
+	private static int BORDERWIDTH;
+	
+	private static int WIDTHDISPLACEMENT;
+	private static int HEIGHTDISPLACEMENT;
+	
+	private boolean createBox;
+	private boolean hasKit;
+	private boolean alreadyMessaged;
+	private boolean firstTime;
+	private boolean alreadyBroken;
+	
+	private Power myState;
+	
+	private int vibrationSpeed;
+	int currX;
+   	int currY;
+   	int destX;
+   	int destY;
+   	int beltCount;
+   	int coverCount;
+	
+    ImageIcon horizontalKit = Images.EmptyKit;
+    
+    public GuiBoxBelt(int locX, int locY)
+    {
+    	currX = locX;
+    	currY = locY;
+    	destX = 0;
+    	destY = 0;
+    	coverCount = 12;
+    	beltCount = 12;
+    	vibrationSpeed = gui.ux.UserData.getVibrationSpeed();
+    	myState = Power.ON;
+    	createBox = false;
+    	hasKit = false;
+    	alreadyMessaged = false;
+    	firstTime = true;
+    }
+    
+    public void setAgent(KitRobot kitRobotAgent)
+    {
+    	sets the Agent for the BoxBelt
+    }
+    
+    public void setVibrationSpeed(int newSpeed)
+    {
+    	Changes the vibration of the belt to shake the kits
+    }
+    
+	public void draw(Graphics g) 
+	{
+		Draw base rectangle that consists of the box
+			
+		
+		Check if the power is on
+		{
+			Make sure that a kit is on the belt
+			{
+				Draw lines on the belt
+			}
+			else
+			{
+				check if the kit is null
+				{
+					Draw lines that will not move on the belt
+				}
+				else
+				{
+					Draw Belt lines that move
+				}
+			}
+		
+			Check to see that the kit is availible and it isn't at the edge
+			{
+				Draw the kit
+			}
+			else
+			{
+				If asked to create a new Box
+				{
+					Draw the kit
+					Set values to keep track of the box
+				}
+				else
+				{
+					Makes sure the robot hasnt taken the kit away, and it is still in need of being drawn
+					{
+						Draw the kit
+					}				
+				}
+			}
+		}
+		else//Power = Off
+		{
+			Draw stationary lines that will not move to show it is off
+			
+			Check to see if there is a kit when it is borken
+			{
+				Draw the Kit
+			}
+		}
+		
+		Check to see if a kit is being made 
+		{
+			Draw the on cover for teh belt
+		}
+		else
+		{
+			Draw the off box Belt
+		}
+	}
+
+	public void updateLocation() 
+	{
+		Change teh vibration Speed to what the main interface slider is
+
+		Check to see if the Power is On
+		{
+			Check to see if the robot took the kit away
+			{
+				Make the new Kit null
+			}
+			Check to see if New Kit is requessted
+			{
+				//Tell NEw Kit to Draw Self
+				firstTime = false;
+				alreadyMessaged = false;
+				newKit = new GuiKit((currX + ((currX - Images.Kit.getIconWidth())/2)), currY + HEIGHT - COVERHEIGHT);
+				newKit.setDestination((currX + ((currX - Images.Kit.getIconWidth())/2)), currY - HEIGHTDISPLACEMENT);
+				newKitAgent.setGuiKit(newKit);
+				newKit.setLinkedGui(this);
+				coverCount = 0;
+			}
+		
+			Check to see the new kit isn't null
+			{
+				Make sure the kit isn't at teh top
+				{
+					newKit.setLocation((currX + ((currX - Images.Kit.getIconWidth())/2)), newKit.getCurrentY());
+					
+					Randomize the belt, to make the movement of the new kit random
+				}
+				newKit.setDestination((currX + ((currX - Images.Kit.getIconWidth())/2)), currY - HEIGHTDISPLACEMENT);
+				Update Kits location
+
+			}
+		
+			coverCount++;
+		}
+	}
+	
+	public void partCallback(Gui part) 
+	{
+		When the kit messages back that it is at teh top notify the kit robot to get eht kit
+	}
+
+	public int getCurrentX() 
+	{
+		return currX;
+	}
+
+	public int getCurrentY() 
+	{
+		return currY;
+	}
+
+	public int getDestinationX() 
+	{
+		return destX;
+	}
+
+	public int getDestinationY() 
+	{
+		return destY;
+	}
+
+	public void setDestination(int x, int y) 
+	{
+		destX = x;
+		destY = y;
+	}
+
+	public void doCreateAKit(AgentKit createdKit) 
+	{
+		Set values to begin process of brining in new kit
+	}
+
+	public void enable() 
+	{
+		myState = Power.ON;
+	}
+
+	public void disable() 
+	{
+		myState = Power.OFF;
+		if(newKit != null){
+			newKit.disable();
+		}
+	}
+
+	public Power checkPower() 
+	{
+		return myState;
+	}
+
+	public void destroy() 
+	{
+		alreadyBroken = true;
+		disable();
+	}
+
+	public void repair() 
+	{
+		enable();
+	}
+
+	public boolean checkRepair() 
+	{
+		return alreadyBroken;
+	}
+}

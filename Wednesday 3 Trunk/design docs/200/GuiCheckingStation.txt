@@ -1,0 +1,128 @@
+GuiCheckingStation
+by:Justin DiFederico
+
+
+public void DoRecieveParts(ArrayList<GuiCandy> Parts){
+	/*
+receives array of parts 
+*/
+	}
+	public void NullKit(GuiKit Kit){
+	//resets the kit
+
+	}
+	public void DoRecieveKit(GuiKit Kit, int x){
+	//recieves either a kit1 kit2 or kit3 and then places them on the kitstand according to type.
+			
+		}
+		
+	}
+
+	public GuiCheckingStation(int x, int y){
+	//	constructor
+	}
+
+
+ public void SetKitStand(KitStandAgent Kit){
+/	retrieves a reference for teh kitstand agent
+	 
+ }
+
+	public void doTakePicture(){
+		
+	//if called sets state to picture able
+	}
+
+
+	void update(){
+	//checks if it can take pictures sends message to dotakepicture
+	}
+
+	@Override
+	public void updateLocation() {
+	
+
+	}
+
+
+	@Override
+	public void partCallback(Gui part) {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public int getCurrentX() {
+		// TODO Auto-generated method stub
+		return currX;
+	}
+
+
+	@Override
+	public int getCurrentY() {
+		// TODO Auto-generated method stub
+		return currY;
+	}
+
+
+	@Override
+	public int getDestinationX() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public int getDestinationY() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public void setDestination(int x, int y) {
+		// TODO Auto-generated method stub
+
+	}
+	
+	@Override
+	public void draw(Graphics g) {
+/*
+	draws kit A in spot A, and Kit B in spot B.
+	Then kit3 is the third spot for where the kit is checked.
+*/
+
+
+		
+	}
+	
+	/** Called by the FactoryPanel to enable GUI agents. */
+	public void enable(){}
+	
+	/** Called by the FactoryPanel to disable GUI agents. */
+	public void disable(){}
+	
+	/** Called by the FactoryPanell to check current power status of a GUI agent. */
+	public Power checkPower(){
+		return Power.ON;}
+	
+	/**
+	 * Called by the FactoryPanel to destroy GUI agents. Should display a unique animation
+	 * particular to the GUI agent in question and set an internal flag to signify that the
+	 * GUI agent has been damaged.
+	 */
+	public void destroy(){}
+	
+	/**
+	 * Called by the FactoryPanel to repair GUI agents. GUI agents that have previously been
+	 * destroyed cannot fully be repaired, and should have a higher chance of producing errors.
+	 */
+	public void repair(){}
+	
+	/** Called by the FactoryPanel to check whether the GUI agent has suffered prior damage. */
+	public boolean checkRepair(){return false;}
+
+}
+
+

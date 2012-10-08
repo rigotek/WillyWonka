@@ -1,0 +1,94 @@
+Lane Camera
+Tyler Baetz
+
+This is the complete design document for the lane camera agent.  The lane camera receives messages from the Nest agent whenever it receives a new part.
+The lane camera will keep track of how many parts each nest contains.  When enough parts have accumulated inside the two nests, the lane camera will take a picture.
+Afterwards, each nest will send the lane camera a list of its parts.  The lane camera will determine whether each part is good or bad and then send the list and appropriate
+nest reference to the PartsRobotAgent.  The lane camera will be optimized to take a picture of the nests at the appropriate time (ideally when both nests have accumulated a
+healthy amount of parts).
+
+Data
+List<Parts> parts1,parts2;
+NestAgent nest1,nest2;
+Timer timer;
+enum Camera = {RESET,FIRED,DONE,PAUSE,PLAY};
+CameraState state;
+GuiLaneCamera guiCamera;
+PartsRobotAgent robot;
+
+Message Input
+This is the message sent by the NestAgents to the Lane Camera.  A new message will reset the timer inside the LaneCameraAgent.
+msgIHaveAnotherPart(int numParts, NestAgent nest){
+	state = CameraState.RESET;
+	}
+	
+This is the message that the timer will call after it expires.  This message is only called if the LaneCamera has not received a message from a nest in a period of time.
+msgTimerFired(){
+	state = CameraState.FIRED;
+	}
+	
+This is the message that the nest will send the LaneCamera after it has taken a picture.  The LaneCamera will store the list of parts the nest and check if they are good or bad.
+msgHereAreParts(List<Parts> parts, NestAgent nest){
+	if (nest == nest1){
+		parts1 = parts;
+		}
+	else if (nest == nest2){
+		parts2 = parts;
+		}
+	state = CameraState.DONE;
+	}
+	
+This is the callback method that the GUI class will call after finishing their animiation.  This should only be called after a "flash" animation has been performed on the screen.	
+msgDoneTakingPicture(){
+	state = CameraState.PLAY;
+}
+	
+Scheduler
+if (state == CameraState.DONE)
+	callRobot();
+else if (state == CameraState.RESET)
+	resetTimer();
+else if (state == CameraState.PLAY)
+	tellNest();
+else if (state == CameraState.FIRED)
+	takePicture();
+	
+Actions
+Calls the parts robot and gives him the lists of good parts
+private void callRobot(){
+	for (Part p in parts1 such that p.goodpart == false)
+		parts1.remove(p);
+	for (Part p in parts2 such that p.goodpart == false)
+		parts2.remove(p);
+	robot.msgIHaveGoodParts(parts1,nest1);
+	robot.msgIHaveGoodParts(parts2,nest2);
+	state = CameraState.PAUSE;
+	}
+
+Tells the GUI object to perform their animation
+private void takePicture(){
+	GuiCamera.msgDoTakePicture();
+	state = CameraState.PAUSE;
+}
+
+Resets the timer if a nest receives another part.  Once the timer expires, calls the TakePicture message.
+private void resetTimer(){
+	if (timer != null)
+		timer.cancel();
+	timer.schedule(new TimerTask(){
+		public void run(){
+			this.msgTimerFired();
+			}
+		}
+	state = CameraState.PAUSE;
+	}
+
+Informs the nest that a picture has been taken.  The nest should respond with a list of their parts
+private void tellNest(){
+	nest1.msgTakingPicture();
+	nest2.msgTakingPicture();
+	state = CameraState.PAUSE;
+	}
+	
+
+	

@@ -1,0 +1,190 @@
+/***********************************************
+GuiPartsRobot - Sumukh Anand
+***********************************************/
+
+*****
+V0
+*****
+
+//VARIABLES
+	public enum State {
+		FREE,
+		TO_IDLE,
+		AT_IDLE,
+		TO_KIT,
+		AT_KIT,
+		TO_NEST, 
+		AT_NEST
+	}
+
+	const int idleX;
+	const int idleY;
+	
+	State currState;
+	List<GuiParts> partsToLoad;
+	GuiKit kitToLoad;
+	Agent partsRobot;
+-------------------------------------------------
+
+//CONSTRUCTORS
+	GuiPartsRobot(int x, int y){
+		//Create robot
+		currX = x;
+		currY = y;
+	}
+	
+	GuiPartsRobot(){
+		//Create robot
+		currX = 0;
+		currY = 0;
+	}
+-------------------------------------------------
+
+//METHODS
+	public void setAgent(Agent agent){
+		//Set the agent
+		partsRobot = agent;
+	}
+	
+	public void draw(Graphics g){
+		//Draw parts that robot is holding
+		for (loop through armContents){
+			armContents[i].draw();
+		}
+		
+		super.draw(g);
+	}
+	
+	public void updateLocation(){
+		//Send messages according to State
+		
+		switch(currState){
+			case(TO_IDLE):
+			break;
+			
+			case(AT_IDLE):
+				currState = FREE;
+			break;
+			
+			case(TO_KIT):
+				if (currX==destX && currY==destY){
+					//rotate and pick up all objects from partsToLoad
+					if (partsToLoad.empty()){
+						currState = AT_KIT;
+					}
+				}
+			break;
+			
+			case(AT_KIT):
+				partsRobot.msgPartsSent();
+			break;
+			
+			case(TO_NEST):
+				if (currX==destX && currY==destY){
+					//rotate and drop off all objects from kitToLoad
+					if (armContents are empty){
+						currState = AT_NEST;
+					}
+				}
+			break;
+			
+			case(AT_NEST):
+				partsRobot.msgPartsReceived();
+			break;
+		}
+		
+		super.updateLocation(){
+	}
+	
+	public void DoGoToIdle(){
+		//Set destination X and Y to idle X and Y
+		destX = idleX;
+		destY = idleY;
+		
+		currState = TO_IDLE;
+	}
+	
+	public void DoRetrieveParts(GuiNest nest, List<GuiParts> parts){
+		//Set destination X and Y to the GuiNest X and Y
+		destX = GuiNest.getCurrentX();
+		destY = GuiNest.getCurrentY();
+		partsToLoad = parts;
+		
+		currState = TO_NEST;
+	}
+	
+	public void DoSendParts(GuiKitStand kitStand, GuiKit kit, List<GuiParts> parts){
+		//Set destination X and Y to GuiKit X and Y
+		destX = kit.getCurrentX();
+		destY = kit.getCurrentY();
+		kitToLoad = kit;
+		
+		currState = TO_KIT;
+	}
+}
+//==========================================================
+
+*****
+V1/V2
+*****
+
+//VARIABLES
+	 enum State {
+		FREE,
+		TO_IDLE,
+		AT_IDLE,
+		TO_KIT,
+		AT_KIT,
+		TO_NEST, 
+		AT_NEST
+	}
+
+	private State currState;
+	private ArrayList<GuiCandy> partsToLoad;
+	private PartsRobotAgent partsRobot;
+	private GuiKit destKit;
+-------------------------------------------------
+
+//CONSTRUCTORS
+	public GuiPartsRobot(int x, int y) {
+	}
+
+	public GuiPartsRobot() {
+	}
+-------------------------------------------------
+
+//METHODS
+	@Override
+	public void updateLocation(){
+		//Update location according to state
+		//Unload and load objects to armContents when required
+		//Return messages to agent
+	}
+
+	@Override
+	public void setAgent(Agent agent) {
+		//Set agent
+	}
+
+	@Override
+	public void DoGoToIdle() {
+		//Set destination X and Y to idle X and Y
+		//Set state
+		//emptyHands();
+	}
+
+	@Override
+	public void DoRetrieveParts(Gui nest, ArrayList<GuiCandy> parts) {
+		//Set destination X and Y to nest X and Y
+		//Save partsToLoad
+		//Set state
+		//emptyHands();
+	}
+
+	@Override
+	public void DoSendParts(Gui kitStand, Gui kit, ArrayList<GuiCandy> parts) {
+		//Set destination X and Y to GuiKit X and Y
+		//Set destKit to kit
+		//Set state
+	}
+//==========================================================

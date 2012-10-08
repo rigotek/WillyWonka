@@ -1,0 +1,234 @@
+Alberto Marroquin
+------------------------------Design-------------------------------------------
+Kit Robot
+
+Messages
+
+--This method gets a configuration for a Kit, and it creates a kit according to the specification.
+msgHereIsKitConfiguration( map<type, amount>)
+{
+Create a new Kit with map
+Create a new MyKit (Kit)
+Set new MyKit Status equal to Available;
+Add new MyKit into the list of myKits
+}
+
+-- The Kit Stand Agent will  notify that the Kit Robot about the a finished Kit 
+msgKitIsDone(Kit) // called by Kit Stand
+{
+If there exist mk in MyKits such that mk.kit == kit
+Then mk.status = Ready_For_Inspection
+return
+}
+
+--The Kit Camera Agent will notify that the Kit passed inspection.
+msgKitIsGood(Kit) // called by Kit Camera
+{
+If there exist mk in MyKits such that mk.kit == kit
+Then mk.status = Ready_For_Delivery
+return
+}
+
+--The Kit Camera Agent will notify that the Kit failed inspection.
+msgKitIsBad(AgentKit kit) {
+If there exist mk in MyKits such that mk.kit == kit
+Then mk.status = KitStatus.Bad_Kit;
+then GuiKit k = mk.kit.guikit;
+	k.clearKit();
+	mk.kit = new AgentKit(mk.kit.config, mk.kit.position);
+	mk.kit.guikit = k;
+	stateChanged();
+	return;
+}
+
+--The GUI will notify that the requested animation is done. This will wake up the agent. 
+animationDone()
+{
+Released();
+}
+
+Scheduler
+
+If there exist mk in myKits such that mk.status == Available && !myStand.isSlotThreeTaken() 
+|| mk.status.equals(KitStatus.Available) && myStand.isEmpty()
+Then placeKitOnStand(mk)
+If there exist mk in myKits such that mk.status == Ready_Bad_Kit  && !myStand.isKitStandFull()
+Then moveKitBackToStand(mk); 
+If there exist mk in myKits such that mk.status == Ready_For_Inspection 
+Then placeKitOnInspection (mk)
+If there exist mk in myKits such that mk.status == Ready_For_Delivery
+Then placeKitOnDeliveryBoat (mk)
+
+Actions
+--Tell the GUI to move the bad kit from inspection slot to available slot.
+moveKitBackToStand(MyKit mk){
+setMyKitPosition(mk);
+mk.slot = myStand.getAvailableSlotNum();
+myStand.setSlotTaken(myStand.getAvailableSlotNum());
+mk.status = KitStatus.Being_Animated;
+this.kitRobotGUI.DoMoveKitBackToStand(mk.kit.guikit, mk.kit.position);
+this.guiControl.acquireUninterruptibly();
+
+myStand.setSlotThreeAvailable();
+mk.status = KitStatus.On_KitStand;
+kitStand.msgHereIsNextAgentKit(mk.kit);
+stateChanged();
+}
+
+-Tell GUI to create a Kit and tell GUI to move Kit to kit stand.
+placeKitOnStand(MyKit mk) // first animate Kit being created and then move Kit to stand
+{
+DoCreateAKit(mk.Kit);
+mk.status = Being_Animated;
+acquire();
+DoMoveKitToStand(mk.Kit);
+mk.status = On_KitStand;
+Send msgHereIsNextKit(mk.Kit) to Kit Stand;
+}
+
+--Tell GUI to place the Kit on the furthest-left position of kit stand.
+placeKitOnInspection(MyKit mk)
+{
+DoMoveKitToCameraInspection(mk.Kit);
+acquire();
+mk.status = On_CameraIInspection;
+send msgInspectKit(mk.Kit) to Kit Camera;
+}
+
+--Tell GUI to place Kit on boat, which exits the factory.
+placeKitOnDeliveryBoat(MyKit mk)
+{
+DoMoveFinishedKitToDeliveryStation (mk.Kit);
+Acquire();
+mk.status = Gone; 
+Send Kit To exit conveyor/boat? Where does it go?
+}
+
+Data
+
+KitStationGUI KitStationGUI;
+KitRobotGUI kitRobotGUI;
+kitCameraGUI kitCameraGUI;
+KitStandAgent kitStand;
+KitCameragent KitCamera;
+List<MyKit> myKits;
+Semaphore guiControl
+Enum KitStatus  { Unknown, Available, Ready_For_Inspection, Ready_For_Delivery, On_KitStand, On_CameraInspection, Gone};
+class MyKit
+{
+Kit kit
+KitStatus status
+}
+MyKitStand myKitStand;
+class MyKitStand{//Serves as a monitor. It monitors the kit stand's slots.
+	//Variables will represent each slot individually.
+	private boolean slotOneTaken = false, slotTwoTaken = false;
+	private boolean slotThreeTaken = false;
+	
+	//The following methods will set slot according to their availability.
+	public void setSlotTaken(int slot){
+		if(slot == 1){
+			slotOneTaken = true;			
+		}
+		else if(slot == 2){
+			slotTwoTaken = true;
+		}
+	}
+	
+	public void setSlotAvilable(int slot){
+		if(slot == 1){
+			slotOneTaken = false;			
+		}
+		else if(slot == 2){
+			slotTwoTaken = false;
+		}
+	}
+	
+	public int getAvailableSlotNum(){
+		if(!slotOneTaken){
+			return 1; 
+		}
+		else if(!slotTwoTaken){
+			return 2;
+		}
+			return 0;
+		}
+	}
+	 
+	public void setSlotThreeTaken(){
+		this.slotThreeTaken = true;
+	}
+	public boolean isEmpty(){
+		if(slotOneTaken == false && slotTwoTaken == false)
+			return true;
+		return false;
+	}
+	
+	public void setSlotThreeAvailable(){
+		this.slotThreeTaken = false;
+	}
+	
+	public boolean isSlotThreeTaken(){
+		return slotThreeTaken;
+	}
+	
+	public boolean isKitStandFull(){
+		if(slotOneTaken && slotTwoTaken)
+			return true;
+		else
+			return false;
+	}
+}
+
+------------------------------API----------------------------------------------
+Kit Robot API
+
+The following method, DoXXX(), will tell the GUI to perform an action. In this context, the GUI refers to the Kit Robot 
+on the animation part. Since the 200 student are assigned different parts for the GUI/animation, then these methods are 
+meant for the Kit Robot GUI. 
+
+•DoCreateAKit()
+This method will tell the GUI to create an empty Kit which will be placed on the Kit Stand by the Kit Robot.  The GUI s
+imply handles the animation of an empty Kit being created.
+•DoMoveKitToStand(Kit)
+This method will tell the GUI to pick up the Kit, being passed as the parameter, and put it on one of the two 
+furthest-right positions on the kit stand. The Kit will be empty until Part Robot fills it with parts.
+•DoMoveKitToCameraInspection(Kit)
+This method will tell the GUI to move the complete Kit to the furthest-left position for a camera inspection. The Kit 
+being passed will be ready for inspection. In other words, the Kit will have parts and will be ready for inspection. The inspection will tell whether the kit is good or not. 
+•DoMoveFinishedKitToDeliveryStation(Kit)
+This method will handle the animation of placing the finished Kit on a boat exiting the factory. The kit Robot must pick 
+up the kit and placed on the kit delivery station (in our case, the boat) where it exits the factory. Thus, the kit passed the inspection and off it goes for delivery.
+•DoMoveKitBacToStand(GuiKit kit, position)
+This method will handle the animation of placing the bad kit back to available slot in the stand. 
+
+•animationDone ()
+This method could be used to notify the Kit Robot about the following:
+-The GUI notifies that the Kit has been created and ready to be used in the factory. Then the Kit Robot prepares to move
+ the Kit into one of the two furthest-right position on the kit stand. 
+-The GUI notifies the Kit Robot that the Kit has been placed on Kit Stand. 
+-The GUI notifies that the Kit has been placed on the furthest-left position for a camera inspection. This message’s 
+intension only tries to tell the Kit Robot to move on if necessary.
+-The GUI notifies the Kit Robot the Kit has been placed on the boat and sent out. The message makes the Kit Robot 
+acknowledge that the Kit no longer exist on the factory since it left on the boat. 
+-The GUI notifies the Kit RObot about Bad Kit being placed back on the stand.
+Basically, any time I call a DoXXX() method ill expect an animationDone() when animation is done;
+
+-----------------------------Non-normative: Kit Missing parts-------------------------------------------------------
+
+The inspection camera will detect a missing part and tell the kit robot about the bad kit. The Kit Robot will then take 
+the bad kit back into an available slot. In order to guaranteed an available slot, the Kit Robot will not create any 
+new kit until the report comes back from the Kit camera. It will stop creating kits when a kit is being inspected. 
+Let say, a kit is being inspected, and the user wants a new kit. the Kit Robot will take in the new kit configuration. 
+However, It will not create the kit if only one slot is available. When the report comes back saying the kit is bad, the 
+kit robot will have a slot available since that same slot was used by the kit being inspected. The Gui Robot just needs 
+to place the bad kit on the available slot. If the report comes back saying kit is good, proceed as normal(place kit on 
+boat and create a new kit).So,gui kit robot will only carry one kit in all cases.  
+
+Method Used in this scenario are the following:
+•msgKitIsbad(Kit);
+•DoMoveKitBackToStand(GuiKit kit, position);
+•moveKitBackToStand(MyKit mk);
+
+All these methods are designed above.
+

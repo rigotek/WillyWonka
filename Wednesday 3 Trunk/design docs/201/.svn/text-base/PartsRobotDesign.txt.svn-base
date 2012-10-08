@@ -1,0 +1,172 @@
+Parts Robot
+Pierre Tasci
+
+This is the complete design doc for the V0 Parts Robot.
+This agent is responsible for talking to the camera and kit stand 
+and intelligently managing which parts it needs to pick up
+from the ones that are currently available. It optimizes for the
+current kit (FIFO) that needs filling so that nothing stays on the kit
+stand for too long but it is also smart enough to go put parts into the
+second kit if there is no current part for the first kit.
+
+--------DATA--------------------------------------
+Queue<Kit> mykits
+private class NestPart {
+	NestAgent nest;
+	PartType type;
+	List<Part> parts;
+}
+
+List<NestPart> nests;
+
+private class MyParts {
+	ArrayList<Part> parts;
+	NestAgent source;
+	Kit dest;
+}
+
+MyParts myparts;
+
+private enum PartsRobotState {
+	IDLE,
+	GUIGOINGTOPARTS,
+	HOLDINGPARTS,
+	GUIHOLDINGPARTS,
+	DELIVERINGPARTS,
+	GUIDELIVERINGPARTS
+}
+
+PartsRobotState state;
+
+-------MESSAGES------------------------------------
+
+This message is sent by the kit stand to the parts robot
+any time the kit stand receives a new kit that it needs to fill.
+This allows the Parts Robot to optimize which parts it goes after.
+Also, it calculates instantly which parts are currently missing from
+the factory that I need
+
+	msgINeedThese(Kit kit) {
+		mykits.add(kit);
+		
+		for(PartType p : kit.config.configuration().keySet()) {
+			Missing miss = new Missing(p);
+			//print("Checking if I am missing "+p.toString());
+			np.missing.add(miss);
+			if(queried.contains(p)) {
+				np.missing.remove(miss);
+				//print("I have already queried for it. Not missing.");
+				break;
+			}
+			//There is a nest that has that type so it is not missing
+			for(NestPart nest : nestparts) {
+				if(nest.type == p) {
+					//print("I have a nest that has this part. Not missing.");
+					np.missing.remove(miss);
+					break;
+				}
+			}	
+		}
+	}
+	
+Sent from the lane cameras to the PartsRobot to allow me to have
+an overview of the good parts available around the factory.
+Also, if i was missing something and now it is fulfilled, 
+take it off the missing list.
+
+	msgIHaveGoodParts(List<Part> gp, NestAgent nt) {
+		for(Part p : gp) {
+			add p to nests.parts where nests.nest.equals nt
+		}
+		
+		for(int i = 0; i < nestparts.size(); i++) {
+			if(nestparts.get(i).nest == nt) {
+				remove a part type that was missing
+			}
+		}
+	}
+	
+Gui Callback method to let me know that the parts have been retrieved from
+the correct nest I told him to retrieve it from.
+
+	msgPartsReceived() {
+		state = state.GUIHOLDINGPARTS;
+	}
+	
+Gui Callback message to let me know that the parts have been sent and 
+dumped into the correct kit on the kitting stand. 
+	
+	msgPartsSent() {
+		state = state.GUIDELIVERINGPARTS;
+	}
+	
+--------SCHEDULER-------------------------------------------------
+I wanted to optomize the scheduler to send off the parts it is holding
+first so I have ordered my sheduler tasks that way.
+	
+if state == state.GUIHOLDINDINGPARTS then
+	notifyPartsTaken();
+
+if EXISTS parts in myparts & state == state.HOLDINGPARTS then
+	deliverParts();
+	
+if state == state.GUIDELIVERINGPARTS then
+	sendParts();
+if EXISTS missing part type in the current kit then
+	switchType();
+
+if EXISTS parts in ANY NestParts such that Parts is needed by mykits.pop()
+	askForParts(Kit,NestParts,quantity);
+	
+else 
+	goToIdle();
+	
+------ACTIONS----------------------------------------------------
+
+--Tells the gui to go get certain parts from a certain nest.
+
+void askForParts(Kit kit, NestPart nest, quantity) {
+	List<Part> nparts = new List<Part>();
+	for(int i = 0; i<quantity; i++) {
+		nparts.add(nest.parts[i]);
+	}
+	*doRetrieveParts(nest.GuiNest, nparts.guiParts);*
+	myparts = nparts;
+	state = state.GUIGOINGTOPARTS;
+	stateChanged();
+}
+
+--Tells if gui has finished retrieving parts then message nest 
+
+void notifyPartsTaken() {
+	state = state.HOLDINGPARTS;
+	myparts.source.msgUsingThese(myparts.parts);
+	stateChanged();
+}
+
+--Tells gui to deliver parts to kitstand
+
+void deliverParts() {
+	*doSendParts(KitStandAgent.GuiKitStand, myparts.dest, myparts.parts);*
+}
+
+--Once the animation of sending the parts to the gui is done, tell kitstand
+
+void sendParts() {
+	*doGoToIdle();*
+	KitStand.msgGiveParts(myparts.parts);
+	myparts = null;
+	state = state.IDLE;
+	stateChanged();
+}
+
+
+-----API-------------------------------------------------
+
+Gui Methods:
+	doGoToIdle();
+	doRetrieveParts();
+	doSendParts();
+
+
+

@@ -1,0 +1,75 @@
+NONNORMATIVES
+
+Drain the Ocean
+--------------------------------------
+Affects:
+	GuiOcean
+	GuiGantryRobot (and Agent)
+	GuiPartsRobot (and Agent)
+	GuiKitRobot (and Agent)
+	GuiBoat
+	GuiOtherBoat
+	MainInterface
+
+
+Methods:
+	MainInterface.drain(): Calls GuiOcean.drain(). Goes through GuiList and calls Gui.pause() Agent.pause() for all Robots and Boats.
+	GuiOcean.drain(): Calls animation to fade out ocean.
+
+
+
+
+
+
+
+Oompa Loompa Robot Revolution
+--------------------------------------
+Affects:
+	GuiGantryRobot
+	GuiPartsRobot
+	GuiKitRobot
+	MainInterface
+
+Methods:
+	MainInterface.revolt(): Calls GuiRobot.revolt() for all GuiRobots in the GuiList.
+	GuiRobot.revolt(): Make robot rotate infinitely. Also, change state to State.REVOLT.
+
+
+
+
+
+
+Chocolate Wave
+---------------------------------------
+Affects:
+	GuiOcean
+	GuiNest (and Agent)
+	GuiLanes (and Agent)
+	GuiCandy
+	MainInterface
+
+Methods:
+	MainInterface.wave(): Calls *.wave() for all Nest and Agent classes (Gui and Agent). Calls GuiOcean.wave();
+	*.wave() (for Nest and Agent Gui and Agents): Deletes all GuiCandys references. Resets states.
+	GuiOcean.wave(): Calls animation to create wave.
+
+
+
+
+
+
+Bubble Bonanza
+---------------------------------------
+Affects:
+	GuiOcean
+	GuiNest (and Agent)
+	GuiLanes (and Agent)
+	GuiCandy
+	MainInterface
+
+Methods:
+	MainInterface.bubble(): Calls *.wave() for all Nest and Agent classes (Gui and Agent).
+	*.bubble() (for Nest and Agent Gui and Agents): Passes all GuiCandys to GuiOcean. Deletes all GuiCandys references. Resets states.
+	GuiOcean.bubble(): Changes GuiCandy.image to image in bubble. Calls GuiCandy.updateLocation() to move upwards offscreen .
+
+

@@ -1,0 +1,70 @@
+GuiKit
+by:Justin DiFederico
+
+public GuiKit(int x, int y) {
+		//constructor
+	}
+
+	public GuiKit(int x, int y, Gui o) {
+		//constructor
+	}
+	
+	public void clearKit(){
+		//Clears the kit
+	}
+
+	public void draw(Graphics g){
+		
+		/*
+		Sets all the positions of hte candies
+		relative to the position of kit.
+		Then goes through and checks its rotation values
+		then rotates it.
+		Then draws the kit and all the candies in the kit.
+		*/	
+
+	}
+
+	public void updateLocation(){
+		//checks if power is on and hten will update location.
+	}
+
+	public void fillKit(ArrayList<GuiCandy> candy){
+	//recievs full array of candy and sets equal to arraylist candy
+	}
+	
+	@Override
+	public void resetImage() {
+		//reset the kits image.
+	}
+
+
+	public Holdable getPart(int i){
+		//recieves parts and adds them to candy array
+	}
+
+	public boolean kitIsFull(){
+		//checks if kit has 8 candies
+	}
+	
+	public void MakeHorizontal(){
+		//Sets kit image horizontal
+	}
+
+	public void MakeVertical(){
+		//sets Image vertical
+	}
+	public void drain(){
+		//disable
+	}
+	public void enable(){
+		//enables power
+	}
+	public void disable(){
+		//disable power
+	}
+	public Power checkPower(){
+	
+//checks state of power
+	}
+}

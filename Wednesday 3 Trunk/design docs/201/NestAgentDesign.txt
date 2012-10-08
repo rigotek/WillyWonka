@@ -1,0 +1,184 @@
+Nest Agent Design
+
+Author: Dana Li
+
+This includes the v4.1 & v4.2 Design for the Nest Agent. The nest agent accepts parts from the lane after parts reach the end
+of the lane and the nest is not full. The nest agent also interacts with the lane camera by sending the camera all
+the current parts in the nest when the camera takes a picture. Also, the agent removes parts from the nest when the
+parts robots picks up parts that a kit needs. For the animation API, the nest agent will tell the animation when a 
+part should appear and disappear from the nest.
+
+
+DATA
+_______________
+
+boolean picture;
+boolean changetype;
+int numParts;
+int nestNum;
+int capacity;
+
+PartType typechange;
+
+LaneAgent lane;
+LaneCameraAgent camera;
+PartsRobotAgent partsrobot;
+
+enum PartState {
+	NEW,
+	INNEST;
+	TOREMOVE;
+}
+
+private class MyPart {
+	Part p;
+	PartState state;
+	
+	MyPart (Part p, PartState ps) {
+		this.p = p;
+		state = ps;
+	}
+}
+
+List<MyPart> parts;
+
+
+MESSAGES
+_______________
+
+This message is sent by the lane when a part has reached the end of the lane and the nest is not full.
+
+msgNextPart(Part p) {
+	MyPart mp = new MyPart(p, NEW);
+	parts.add(mp);
+}
+
+This message is sent by the lane camera when it wants to know what parts are in the nest right now.
+
+msgTakingPicture() {
+	picture = true;
+}
+
+This message is sent by the parts robot after it has decided what parts to take out of the nest so the nest agent
+can remove them.
+
+msgINeedTheseParts(List<Part> pts) {
+	FOR ALL p in parts SUCH THAT p.p == x in parts then
+		p.state == TOREMOVE;
+}
+
+This message is sent by the parts robot when it needs more of a different part type, so this
+message will trickle back to the lane, feeder, and gantry.
+
+msgChangeToThisPart(PartType type) {
+	changetype = true;
+	typechange = type;
+}
+
+msgThesePartsAreBad(List<AgentPart> pts) {
+	FOR ALL p in parts AND pt in pts SUCH THAT p == pt
+		p.state = BAD;
+}
+
+msgPurgeTheNest() {
+	purgenest = true;
+}
+
+
+SCHEDULER
+_______________
+
+if changetype == true then
+	ChangePartType();
+	
+if(purgenest) then
+	PurgeNest();
+	CheckForFull();
+	
+if picture == true then
+	SendCameraPicture();
+	CheckForFull();
+
+if THERE EXISTS p in parts SUCH THAT p.state == NEW then
+	CheckForFull();
+	PutInNest(p);
+
+if THERE EXISTS p in parts SUCH THAT p.state == TOREMOVE then
+	CheckForFull();
+	RemoveFromNest(p);
+	
+if THERE EXISTS p in parts SUCH THAT p.state == BAD then
+	PurgeNestPart(p);
+	CheckForFull();
+	
+if(currenttype != typechange && numParts >= capacity-1) then
+	PurgeNest();
+	CheckForFull();
+	
+	
+ACTIONS
+_______________
+
+CheckForFull() {
+	if numParts < capcity then
+		lane.msgIAmNotFull(true);
+	else
+		lane.msgIAmNotFull(false);
+}
+
+ChangePartType() {
+	lane.msgChangeToThisPart(typechange);
+	changetype = false;
+}
+
+SendCameraPicture() {
+	List<Part> partsinnest = new List<Part>();
+	FOR ALL p in parts SUCH THAT p.state == INNEST
+		partsinnest.add(p.p);
+	camera.msgHereAreParts(partsinnest, nestNum);
+}
+
+PutInNest(MyPart p) {
+	DoPutInNest(p.p);
+	find(parts, p);
+	p.state == INNEST;
+	numParts++;
+	camera.msgIHaveAnotherPart(numParts, nestNum);
+}
+
+RemoveFromNest(MyPart p) {
+	DoRemoveFromNest(p.p);
+	parts.remove(p);
+	numParts--;
+}
+
+PurgeNest() {
+	FOR ALL p in parts
+		DoRemoveFromNest(p.p);
+}
+
+PurgeNestPart (MyPart p) {
+	guinest.purgePart(p.p.partgui);
+	parts.remove(p);
+	numParts--;
+}
+	
+
+ANIMATION API
+_______________
+
+This will make the part appear in the nest.
+DoPutInNest(Part);
+
+This will remove the part from the nest in the animation.
+DoRemoveFromNest(Part);
+
+ANIMATION CALLBACK
+
+This will remove a part from the nest that the GUI Nest tells the agent has been removed due to
+a non-normative scenario, such as being taken away by bubbles or a wave.
+
+RemovePartFromNest(GuiCandy p) {
+	parts.remove(p);
+}
+	

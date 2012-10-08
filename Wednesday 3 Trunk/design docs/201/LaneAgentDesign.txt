@@ -1,0 +1,163 @@
+Lane Agent Design
+
+Author: Dana Li
+
+This includes the v4.1 & v4.2 Design for the Lane Agent. This agent is responsible for notifying the feeder of how many spots for
+parts are open on the lane whenever the feeder asks, and for holding the parts the feeder gives to travel down
+the lane. It also interacts with the nest by placing parts into the nest after the parts have reached the end of the
+lane, and as long as the nest is not full. The agent also interacts with the lane animation by telling it when
+to animate a part traveling down the lane.
+
+DATA
+_______________
+
+int size;
+int capacity;
+boolean nestfull;
+boolean partwaiting;
+boolean changetype;
+boolean timerreset;
+
+PartType typechange;
+
+FeederAgent feeder;
+NestAgent nest;
+
+enum PartState {
+	FROMFEEDER,
+	ONLANE,
+	ENDOFLANE
+};
+
+enum LaneState {
+	IDLE,
+	RUNNING,
+	NEEDSREFILL
+};
+
+private class MyPart {
+	Part p;
+	PartState state;
+	
+	MyPart (Part p, PartState ps) {
+		this.p = p;
+		state = ps;
+	}
+}
+
+List<MyPart> parts;
+
+
+MESSAGES
+_______________
+
+This message is sent by the feeder when it wants to know how many spots are open on the lane.
+
+msgRequestNumberOfOpenSpots() {
+	partwaiting = true;
+}
+
+This message is sent by the feeder whenever it contains parts to give to the lane and it knows the lane is not
+yet full. 
+
+msgPartForLane(Part p) {
+	MyPart mp = new MyPart(p, FROMFEEDER);
+	parts.add(mp);
+}
+
+This message is sent by the nest each time the nest's scheduler runs so the lane knows whether it can continue
+to give parts to the nest or not.
+
+msgIAmNotFull(Boolean b)
+{
+	nestfull = b;
+}
+
+msgChangeToThisPart(PartType type)
+{
+	changetype = true;
+	typechange = type;
+}
+
+
+SCHEDULER
+_______________
+
+if changetype == true then
+	ChangePartType();
+
+if partwaiting = true then
+	AcceptPart();
+	
+if THERE EXISTS p in parts SUCH THAT p.state == FROMFEEDER then
+	MoveToLane(p);
+	
+if THERE EXISTS p in parts SUCH THAT p.state == ENDOFLANE && nestfull == false then
+	GiveToNest(p);
+	
+if LaneState is RUNNING && size == 0 && timerreset == true
+	resetTimer();
+	
+if(size >= capacity-10 && nestpurge)
+	NestShouldPurge();
+	
+
+ACTIONS
+_______________
+
+ChangePartType() {
+	feeder.msgChangeToThisPart(this, typechange);
+	changetype = false;
+}
+
+AcceptParts() {
+	feeder.msgLaneSpotsOpen(this, capacity-size);
+}
+
+MoveToLane(MyPart p) {
+	DoMoveToLane(p.p);
+	find(parts, p);
+	p.state = ONLANE;
+	size++;
+}
+
+GiveToNest(MyPart p) {
+	DoRemoveFromLane(p.p);
+	nest.msgNextPart(p.p);
+	parts.remove(p);
+	size--;
+}
+
+NestShouldPurge() {
+	nest.msgPurgeTheNest();
+	nestpurge = false;
+}
+
+resetTimer() {
+	timer.schedule(task, 6000);
+	timerreset = false;
+}
+
+ANIMATION API
+_______________
+
+This will place the part at the beginning of the lane and animate it traveling down the entire lane:
+DoMoveToLane(Part);
+
+This will make the part disappear from the lane:
+DoRemoveFromLane(Part);
+
+ANIMATION CALLBACK METHODS
+
+This will notify the agent that the animation has finished moving the part to the end of the lane, and it will change
+the part's state on the agent end:
+DonePartMoving(GuiCandy p) {
+	p.state = ENDOFLANE;
+}
+
+This will remove the part from the lane after the GUI Lane tells the the agent a part has been removed
+ due to a non-normative scenario, like the bubbles or wave taking it away.
+ 
+RemovePartFromLane(GuiCandy p) {
+	parts.remove(p);
+}

@@ -1,0 +1,177 @@
+Holdable
+
+Christian Vanderwall
+
+public abstract class Holdable implements Gui{
+	public boolean update = true;
+	int currX;
+	int currY;
+	int destX;
+	int destY;
+	Object linkedGui;
+
+public Holdable(int x, int y, Object o) {
+	// Constructor
+	super(x,y);
+	linkedGui = o;
+}
+
+void draw(Graphics g){ };
+
+void updateLocation(){
+	//move to destX and destY values;
+	//if destination reached
+	//linkedGui.partsCallback();
+};
+
+void partsCallback(){ };
+
+int getX(){
+	return currX;
+}
+
+int getY(){
+	return currY;
+	}
+
+	void setDestination(int x, int y){
+		destX = x;
+		destY = y;
+	}
+}
+
+//==========================================================
+//v1/v2
+
+/**
+ *@author Christian Vanderwall
+/*
+ 
+
+package gui.holdable;
+
+public abstract class Holdable implements Gui{
+	public boolean update = true;
+	public ImageIcon image;
+	protected int currX;
+	protected int currY;
+	protected int currAngle;
+	protected int destAngle;
+	protected int destX;
+	protected int destY;
+	protected int transX;
+	protected int transY;
+	private Gui linkedGui;
+
+	public Holdable(int x, int y) {
+		//initialize variables
+	}
+
+	public Holdable(int x, int y, Gui o) {
+		// Alternate Constructor
+	}
+
+	@Override
+	public void draw(Graphics g){ 
+		//draw image and apply necessary transformations
+	};
+
+	@Override
+	public void updateLocation(){
+		//Update currX and currY to destX and destY values;
+		//Set necessary rotation angles
+	};
+
+	public void callBackGui() {
+		linkedGui.partCallback(this);
+	}
+	
+	@Override
+	public void partCallback(Gui part){ };
+
+	@Override
+	public int getCurrentX(){
+		return currX;
+	}
+
+	@Override
+	public int getCurrentY(){
+		return currY;
+	}
+	
+	@Override
+	public int getDestinationX() {
+		return destX;
+	}
+
+	@Override
+	public int getDestinationY() {
+		return destY;
+	}
+
+	@Override
+	public void setDestination(int x, int y){
+		destX = x;
+		destY = y;
+	}
+	
+	public void setLocation(int x, int y){
+		currX = x;
+		currY = y;
+		setDestination(x, y);
+	}
+	
+	public void setLinkedGui(Gui o) {
+		linkedGui = o;
+	}
+	
+	public void setDestRotation(int a){
+		destAngle = a;
+	}
+
+	public void setCurrRotation(int a){
+		//set current rotation angle
+	}
+
+	public void setTranslation(int x, int y) {
+		transX = x;
+		transY = y;
+	}
+	
+	public void resetImage(){
+		transX = 0;
+		transY = 0;
+	}
+	
+	@Override
+	public Power checkPower() {
+		//delegated to subclasses
+		return null;
+	}
+
+	@Override
+	public boolean checkRepair() {
+		//delegated to subclasses
+		return false;
+	}
+
+	@Override
+	public void destroy() {
+		//delegated to subclasses
+	}
+
+	@Override
+	public void disable() {
+		//delegated to subclasses
+	}
+
+	@Override
+	public void enable() {
+		//delegated to subclasses
+	}
+
+	@Override
+	public void repair() {
+		//delegated to subclasses
+	}
+}

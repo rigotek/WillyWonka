@@ -1,0 +1,90 @@
+Author: Jonathan Chu
+---------------------V2-------------------------------
+
+public class GuiBubble implements Gui 
+{
+	
+	public GuiBubble(GuiCandy candyPart)
+	{
+		-Initialize all the values
+		-Create the arraylist of random values for the bubble to travel to
+		-Set teh private value of the candy to the one that it is passed
+	}
+	public void draw(Graphics g) 
+	{
+		-Draw the candy in the position since it is updated
+		-Draw the bubble aroudn the candy given the location of the candy, and using the displacement values
+	}
+
+	public void updateLocation() 
+	{
+		-Check to see the location within the coordinates of the arraylists
+		-Set teh Destination of the candy to reflect where it needs to go
+	}
+
+	public void partCallback(Gui part) 
+	{	
+		-When the candy reaches the location set out in the arraylist it calls back
+		-Change the index of the coordinates the bubbles are looking at
+	}
+
+	public boolean getOffScreen()
+	{
+		return offScreen;
+	}
+	public void enable() 
+	{
+
+	}
+
+	public void disable() 
+	{
+
+	}
+
+	public Power checkPower() 
+	{
+		return Power.ON;
+	}
+
+	public void destroy() 
+	{
+
+	}
+
+	public void repair() 
+	{
+
+	}
+
+	public boolean checkRepair() 
+	{
+		return false;
+	}
+
+	public int getCurrentX() 
+	{
+		return 0;
+	}
+
+	public int getCurrentY() 
+	{
+		return 0;
+	}
+
+	public int getDestinationX() 
+	{
+		return 0;
+	}
+
+	public int getDestinationY() 
+	{
+		return 0;
+	}
+
+	public void setDestination(int x, int y) 
+	{
+
+	}
+
+}

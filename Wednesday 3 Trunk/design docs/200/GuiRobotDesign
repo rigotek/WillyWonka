@@ -1,0 +1,196 @@
+/***********************************************
+GuiRobot - Sumukh Anand
+***********************************************/
+
+*****
+V0
+*****
+
+//VARIABLES
+	int currX;
+	int currY;
+	int destX;
+	int destY;
+	
+	int currAngle;
+	int destAngle;
+	Holdable[] armContents;	
+	Bitmap robot;
+-------------------------------------------------
+
+//METHODS
+	public void draw(Graphics g){
+		//Draw robot at currX, currY
+	}
+		
+	public void updateLocation(){
+		//currX+=value towards destX;
+		//currY+=value towards destY;
+		//rotate() towards destAngle;
+	}
+		
+	public void partsCallback(){
+		//do nothing;
+	}
+		
+	public int getCurrentX(){
+		return currX;
+	}
+		
+	public int getCurrentY(){
+		return currY;
+	}
+		
+	public int getDestinationX(){
+		return destX();
+	}
+		
+	public int getDestinationY(){
+		return destY();
+	}
+		
+	public void rotate(){
+		//Rotate robot by __degrees towards destAngle;
+		//Rotate armContents by __degrees towards destAngle;
+		currAngle+=degrees;
+	}
+		
+	public void setRotation(int angle){
+		//Set destination angle value
+		destAngle = angle;
+	}
+		
+	public void setDestination(int x, int y){
+		//Set destination X and Y values
+		destX = x;
+		destY = y;
+	}
+}
+//==========================================================
+
+*****
+V1/V2
+*****
+
+//VARIABLES
+	protected int currX;
+	protected int currY;
+	protected int destX;
+	protected int destY;
+	protected int currAngle;
+	protected int destAngle;
+	
+	protected int numContents;
+	protected boolean waitForRotation;
+	protected Holdable[] armContents;
+	
+	protected boolean isRevolting;
+	protected int oldDestX;
+	protected int oldDestY;
+	protected int oldAngle;
+	
+	protected boolean broken;
+-------------------------------------------------
+
+//CONSTRUCTORS
+	public GuiRobot(int x, int y){
+	}
+	
+	public GuiRobot(){
+	}
+-------------------------------------------------
+
+//METHODS
+	@Override
+	public void draw(Graphics g) {
+		//Draw Robot
+		//Draw armContents
+		//Include affine transformations for both
+	}
+
+	@Override
+	public void updateLocation() {
+		if (broken)
+			return;
+		
+		//Keep destAngle between 0 and 360
+		//Update location for all armContents
+		//Move to destination
+ 		//If revolting, move to random locations
+	}
+
+	@Override
+	public void partCallback(Gui part) {
+	}
+
+	@Override
+	public int getCurrentX() {
+		return currX;
+	}
+
+	@Override
+	public int getCurrentY() {
+		return currY;
+	}
+
+	@Override
+	public int getDestinationX() {
+		return destX;
+	}
+
+	@Override
+	public int getDestinationY() {
+		return destY;
+	}
+
+	@Override
+	public void setDestination(int x, int y) {
+		destX = x;
+		destY = y;
+	}
+	
+	public void revolt(){
+		//Set isRevolting to true
+		//Move to random location
+		//Save old destinations
+	}
+	
+	public void endRevolt(){
+		//Reset to old destinations
+	}
+	
+	@Override
+	public Power checkPower() {
+		//Return power based on broken
+	}
+
+	@Override
+	public boolean checkRepair() {
+		return false;
+	}
+
+	@Override
+	public void destroy() {
+	}
+
+	@Override
+	public void disable() {
+		//Set broken to true
+		//Disable all armContents
+	}
+
+	@Override
+	public void enable() {
+		//Set broken to false
+		//Enable all armContents
+	}
+
+	@Override
+	public void repair() {
+	}
+	
+	public void emptyHands() {
+		//Set armContents to null;
+		//Reset numContents
+	}
+//==========================================================

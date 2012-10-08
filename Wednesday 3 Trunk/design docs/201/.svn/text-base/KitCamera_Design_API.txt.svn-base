@@ -1,0 +1,111 @@
+Alberto Marroquin
+--------------------------------Design----------------------------------------------
+Kit Camera
+
+Messages
+
+--The Kit Robot Agent notifies that the Kit must be inspected.
+msgInspectKit(Kit)
+{
+Create a new MyKit(Kit)
+Set new MyKit status equal to Ready_To_Inspect
+Add MyKit into the list of Kits
+}
+
+--Notifies the inspection is over for a specific Kit. If true, Kit passed. Otherwise, it failed.
+msgInpectionDone(Kit, Boolean)
+{
+if there exist k in Kits such that k.kit = Kit
+then if(true) then k.status = Inspection_Passed;
+	else then k.status = Inspection_Failed;
+	return;
+}
+
+Scheduler
+
+If there exist mk in kits such that mk.status = Redy_To_Inspect
+Then checkIfKitIsGood(mk);
+If there exist mk in kits such that mk.status = Inspection_passed
+Then norifyKitIsGood(mk);
+If there exist mk in kits such that mk.status = Inspection_failed
+Then notifyKitIsBad(mk);
+
+
+Actions
+
+--Tell GUI to inpect the Kit. The inspection will take time. 
+checkIfKitIsGood(MyKit mk)
+{
+DoTakePiture(mk.kit)
+Acquire();
+mk.status = Being_Inspected;
+timerTask{inspection(mk.kit), time}; //need to edit this
+}
+
+--Perform Inspection on Kit
+inspection(MyKit mk)
+{
+Determine if parts and amount of parts satisfy the configuration
+And call a msg to notify agent.
+}
+
+--Tell Kit Robot Agent that the Kit passed.
+notifyKitIsGood(MyKit mk)
+{
+Send msgKitIsGood(mk.Kit) to Kit Robot;
+}
+
+--Tell Kit Robot Agent that the Kit Failed. Note: It will be used in the future.
+notifyKitIsBad(MyKit mk)
+{
+Send msgKitIsBad(mk.Kit) to Kit Robot;
+}
+
+Data
+
+CamaraInspectionGUI cameraInspectionGUI;
+KitRobotAgent kitRobot;
+List<MyKit> kits;
+Enum KitStatus{ Ready_To_Inspect, Inspection_Passed, Inspection_Failed, Being_Inspected}
+Class MyKit
+{
+Kit kit;
+KitStatus status;
+}
+
+
+---------------------------------API--------------------------------------------------
+Kit Camera API
+
+The following method, DoXXX() will tell the GUI to perform  an action. In this context, the GUI refers to the Kit Camera 
+on the animation part. Since the 200 student are assigned different parts for the GUI/animation, then these methods are 
+meant for the Kit Camera GUI. The other methods, msgXXX(), will be a mechanism that handles how the agents are notified 
+about certain animation being done. When the animation is done, the Kit Camera GUI will send a message to the agent about 
+its finished work.
+
+•DoTakePicture(Kit)
+This method tells the GUI to take a picture of the Kit being inspected. The Kit must exist on the furthest-left position 
+of the Kit Stand, in order, to take a valid picture.
+
+•msgDoneTakingPicture(Kit)
+The GUI notifies the Kit Robot that a picture has been taken of the Kit being inspected. The kit robot will then proceed 
+as necessary. 
+
+-----------------------------Non-normative: Kit Missing parts-------------------------------------------------------
+
+The inspection camera will detect a missing part and tell the kit robot about the bad kit. The Kit Robot will then take 
+the bad kit back into an available slot. In order to guaranteed an available slot, the Kit Robot will not create any 
+new kit until the report comes back from the Kit camera. It will stop creating kits when a kit is being inspected. 
+Let say, a kit is being inspected, and the user wants a new kit. the Kit Robot will take in the new kit configuration. 
+However, It will not create the kit if only one slot is available. When the report comes back saying the kit is bad, the 
+kit robot will have a slot available since that same slot was used by the kit being inspected. The Gui Robot just needs 
+to place the bad kit on the available slot. If the report comes back saying kit is good, proceed as normal(place kit on 
+boat and create a new kit).So,gui kit robot will only carry one kit in all cases while Kit camera will detect bad kits.  
+
+Method Used in this scenario are the following:
+•checkIfkitIsGood(Mykit)
+•inspection(Mykit)
+•msgKitIsbad(Kit);
+
+
+All these methods are designed above.
